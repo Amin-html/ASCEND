@@ -24,10 +24,7 @@ class DriftTaskActions implements TaskActions {
     required this._clock,
     required this._ids,
     required this._engine,
-  })  : _db = db,
-        _clock = clock,
-        _ids = ids,
-        _engine = engine;
+  });
 
   final AppDatabase _db;
   final Clock _clock;
