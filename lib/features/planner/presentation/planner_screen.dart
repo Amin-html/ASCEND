@@ -6,12 +6,10 @@ import 'package:ascend/core/theme/app_colors.dart';
 import 'package:ascend/core/theme/app_dimens.dart';
 import 'package:ascend/core/utils/day_key.dart';
 import 'package:ascend/core/utils/formatters.dart';
-import 'package:ascend/features/gamification/domain/completion_result.dart';
 import 'package:ascend/features/tasks/data/task_providers.dart';
 import 'package:ascend/features/tasks/domain/category.dart';
-import 'package:ascend/features/tasks/domain/task.dart';
 import 'package:ascend/features/tasks/presentation/task_card.dart';
-import 'package:ascend/features/tasks/presentation/task_form_sheet.dart';
+import 'package:ascend/features/tasks/presentation/task_interactions.dart';
 import 'package:ascend/shared/widgets/empty_state.dart';
 import 'package:ascend/shared/widgets/error_state.dart';
 
@@ -39,72 +37,6 @@ class _PlannerScreenState extends ConsumerState<PlannerScreen> {
   void _goToday() {
     final now = ref.read(clockProvider).now();
     setState(() => _day = DateTime(now.year, now.month, now.day));
-  }
-
-  Future<void> _toggle(Task task) async {
-    final actions = ref.read(taskActionsProvider);
-    final messenger = ScaffoldMessenger.of(context);
-
-    if (task.isCompleted) {
-      await actions.reopen(task.id);
-      messenger
-        ..clearSnackBars()
-        ..showSnackBar(const SnackBar(content: Text('Task reopened')));
-      return;
-    }
-
-    final result = await actions.complete(task.id);
-    if (result == null) return;
-    messenger
-      ..clearSnackBars()
-      ..showSnackBar(SnackBar(content: Text(_rewardMessage(result))));
-  }
-
-  String _rewardMessage(CompletionResult r) {
-    final parts = <String>['+${r.xpGained} XP'];
-    if (r.bonusXp > 0) parts.add('incl. ${r.bonusXp} bonus');
-    if (r.leveledUp) parts.add('Level ${r.levelAfter}!');
-    return parts.join('  •  ');
-  }
-
-  Future<void> _openForm({Task? task}) async {
-    final saved = await showTaskFormSheet(
-      context,
-      task: task,
-      initialDayKey: dayKeyOf(_day),
-    );
-    if (!saved || !mounted) return;
-    ScaffoldMessenger.of(context)
-      ..clearSnackBars()
-      ..showSnackBar(
-        SnackBar(content: Text(task == null ? 'Task created' : 'Task saved')),
-      );
-  }
-
-  Future<void> _confirmDelete(Task task) async {
-    final ok = await showDialog<bool>(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('Delete task?'),
-        content: Text(
-          '"${task.title}" will be removed'
-              '${task.isCompleted ? ' together with its XP' : ''}.',
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(context).pop(false),
-            child: const Text('Cancel'),
-          ),
-          TextButton(
-            onPressed: () => Navigator.of(context).pop(true),
-            style: TextButton.styleFrom(foregroundColor: AppColors.danger),
-            child: const Text('Delete'),
-          ),
-        ],
-      ),
-    );
-    if (ok != true || !mounted) return;
-    await ref.read(taskActionsProvider).delete(task.id);
   }
 
   String _title(String key, DateTime today) {
@@ -160,7 +92,10 @@ class _PlannerScreenState extends ConsumerState<PlannerScreen> {
                         title: 'No tasks for this day',
                         message: 'Plan your day to start earning XP.',
                         actionLabel: 'Add task',
-                        onAction: _openForm,
+                        onAction: () => openTaskForm(
+                          context,
+                          initialDayKey: key,
+                        ),
                       );
                     }
                     final done = tasks.where((t) => t.isCompleted).length;
@@ -183,9 +118,13 @@ class _PlannerScreenState extends ConsumerState<PlannerScreen> {
                           key: ValueKey(task.id),
                           task: task,
                           category: categoryById[task.categoryId],
-                          onToggle: () => _toggle(task),
-                          onEdit: () => _openForm(task: task),
-                          onDelete: () => _confirmDelete(task),
+                          onToggle: () => toggleTask(context, ref, task),
+                          onEdit: () => openTaskForm(
+                            context,
+                            task: task,
+                            initialDayKey: key,
+                          ),
+                          onDelete: () => confirmDeleteTask(context, ref, task),
                         );
                       },
                     );

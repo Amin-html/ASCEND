@@ -1,13 +1,13 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 
-import 'package:ascend/app.dart';
 import 'package:ascend/features/goals/presentation/goals_screen.dart';
 import 'package:ascend/features/home/presentation/home_screen.dart';
 
+import 'helpers/test_app.dart';
+
 Future<void> pumpApp(WidgetTester tester) async {
-  await tester.pumpWidget(const ProviderScope(child: AscendApp()));
+  await tester.pumpWidget(testApp());
   await tester.pumpAndSettle();
 }
 
@@ -40,10 +40,11 @@ void main() {
     expect(find.text('New habit'), findsOneWidget);
     expect(find.text('New note'), findsOneWidget);
 
-    await tester.tap(find.text('New task'));
+    await tester.tap(find.text('New goal'));
     await tester.pumpAndSettle();
 
-    expect(find.text('Plan something and earn XP'), findsNothing);
+    expect(find.text('Break a big result into milestones'), findsNothing);
+    expect(find.text('New goal is coming soon'), findsOneWidget);
   });
 
   testWidgets('uses navigation rail on wide screens', (tester) async {
