@@ -5,6 +5,7 @@ import 'package:ascend/core/theme/app_colors.dart';
 import 'package:ascend/core/theme/app_dimens.dart';
 import 'package:ascend/core/theme/app_typography.dart';
 import 'package:ascend/shared/widgets/create_sheet.dart';
+import 'package:ascend/features/tasks/presentation/task_form_sheet.dart';
 
 class _NavItem {
   const _NavItem(this.label, this.icon, this.selectedIcon);
@@ -44,10 +45,21 @@ class AppShell extends StatelessWidget {
   Future<void> _onCreate(BuildContext context) async {
     final action = await showCreateSheet(context);
     if (action == null || !context.mounted) return;
-    // Формы создания появятся на следующих этапах.
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text('${action.title} is coming soon')),
-    );
+
+    if (action == CreateAction.task) {
+      final saved = await showTaskFormSheet(context);
+      if (saved && context.mounted) {
+        ScaffoldMessenger.of(context)
+          ..clearSnackBars()
+          ..showSnackBar(const SnackBar(content: Text('Task created')));
+      }
+      return;
+    }
+
+    // Остальные формы появятся на следующих этапах.
+    ScaffoldMessenger.of(context)
+      ..clearSnackBars()
+      ..showSnackBar(SnackBar(content: Text('${action.title} is coming soon')));
   }
 
   @override
