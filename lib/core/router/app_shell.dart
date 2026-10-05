@@ -6,6 +6,7 @@ import 'package:ascend/core/theme/app_dimens.dart';
 import 'package:ascend/core/theme/app_typography.dart';
 import 'package:ascend/shared/widgets/create_sheet.dart';
 import 'package:ascend/features/tasks/presentation/task_form_sheet.dart';
+import 'package:ascend/features/goals/presentation/goal_interactions.dart';
 
 class _NavItem {
   const _NavItem(this.label, this.icon, this.selectedIcon);
@@ -53,6 +54,11 @@ class AppShell extends StatelessWidget {
           ..clearSnackBars()
           ..showSnackBar(const SnackBar(content: Text('Task created')));
       }
+      return;
+    }
+
+    if (action == CreateAction.goal) {
+      await createGoalAndOpen(context);
       return;
     }
 

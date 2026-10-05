@@ -4,12 +4,22 @@ import 'package:flutter_test/flutter_test.dart';
 
 import 'package:ascend/app.dart';
 import 'package:ascend/features/gamification/data/gamification_providers.dart';
+import 'package:ascend/features/goals/data/goal_providers.dart';
+import 'package:ascend/features/goals/domain/goal_actions.dart';
+import 'package:ascend/features/goals/domain/goal_models.dart';
 import 'package:ascend/features/tasks/data/task_providers.dart';
 import 'package:ascend/features/tasks/domain/category.dart';
 import 'package:ascend/features/tasks/domain/task.dart';
 
+import 'fake_goal_actions.dart';
+
 /// Приложение с подставленными данными, без SQLite.
-Widget testApp({List<Task> tasks = const [], int totalXp = 0}) {
+Widget testApp({
+  List<Task> tasks = const [],
+  int totalXp = 0,
+  List<GoalWithMilestones> goals = const [],
+  GoalActions? goalActions,
+}) {
   return ProviderScope(
     overrides: [
       tasksByDayProvider.overrideWith((ref, dayKey) => Stream.value(tasks)),
@@ -21,6 +31,12 @@ Widget testApp({List<Task> tasks = const [], int totalXp = 0}) {
       activeDaysProvider.overrideWith(
             (ref) => Stream.value(const <String>{}),
       ),
+      goalsProvider.overrideWith((ref) => Stream.value(goals)),
+      goalProvider.overrideWith(
+            (ref, id) =>
+            Stream.value(goals.where((g) => g.goal.id == id).firstOrNull),
+      ),
+      goalActionsProvider.overrideWithValue(goalActions ?? FakeGoalActions()),
     ],
     child: const AscendApp(),
   );

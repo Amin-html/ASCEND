@@ -29,7 +29,7 @@ void main() {
     expect(find.byType(GoalsScreen), findsOneWidget);
   });
 
-  testWidgets('FAB opens create sheet and closes on selection', (tester) async {
+  testWidgets('FAB opens create sheet', (tester) async {
     await pumpApp(tester);
 
     await tester.tap(find.byType(FloatingActionButton));
@@ -40,11 +40,23 @@ void main() {
     expect(find.text('New habit'), findsOneWidget);
     expect(find.text('New note'), findsOneWidget);
 
+    await tester.tap(find.text('New habit'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Build a streak day by day'), findsNothing);
+    expect(find.text('New habit is coming soon'), findsOneWidget);
+  });
+
+  testWidgets('New goal opens the goal form', (tester) async {
+    await pumpApp(tester);
+
+    await tester.tap(find.byType(FloatingActionButton));
+    await tester.pumpAndSettle();
     await tester.tap(find.text('New goal'));
     await tester.pumpAndSettle();
 
-    expect(find.text('Break a big result into milestones'), findsNothing);
-    expect(find.text('New goal is coming soon'), findsOneWidget);
+    expect(find.text('Create goal'), findsOneWidget);
+    expect(find.text('New goal is coming soon'), findsNothing);
   });
 
   testWidgets('uses navigation rail on wide screens', (tester) async {
