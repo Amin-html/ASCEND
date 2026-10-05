@@ -35,6 +35,7 @@ class BackupService {
   Future<BackupFile> createBackup({
     String? password,
     String filePrefix = 'ascend-backup',
+    bool withSeconds = false,
   }) async {
     final snapshot = await _io.export();
     final now = _clock.now();
@@ -51,7 +52,11 @@ class BackupService {
       iterations: _kdfIterations,
     );
     return BackupFile(
-      fileName: backupFileName(now, prefix: filePrefix),
+      fileName: backupFileName(
+        now,
+        prefix: filePrefix,
+        withSeconds: withSeconds,
+      ),
       bytes: bytes,
     );
   }
@@ -81,9 +86,11 @@ class BackupService {
     if (tables is! Map<String, dynamic>) {
       throw const BackupCorruptedException();
     }
-
     try {
-      final safety = await createBackup(filePrefix: 'safety-before-restore');
+      final safety = await createBackup(
+        filePrefix: 'safety-before-restore',
+        withSeconds: true,
+      );
       await _safetyStore.save(safety.fileName, safety.bytes);
     } on Object {
       throw const BackupRestoreFailedException(

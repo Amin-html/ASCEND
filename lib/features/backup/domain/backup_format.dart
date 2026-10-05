@@ -11,9 +11,15 @@ abstract final class BackupFormat {
   static const int saltLength = 16;
 }
 
-String backupFileName(DateTime at, {String prefix = 'ascend-backup'}) {
+String backupFileName(
+    DateTime at, {
+      String prefix = 'ascend-backup',
+      bool withSeconds = false,
+    }) {
   String two(int n) => n.toString().padLeft(2, '0');
-  final date = '${at.year.toString().padLeft(4, '0')}${two(at.month)}${two(at.day)}';
-  final time = '${two(at.hour)}${two(at.minute)}';
+  final date =
+      '${at.year.toString().padLeft(4, '0')}${two(at.month)}${two(at.day)}';
+  final time =
+      '${two(at.hour)}${two(at.minute)}${withSeconds ? two(at.second) : ''}';
   return '$prefix-$date-$time.${BackupFormat.fileExtension}';
 }

@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 
 import 'package:ascend/core/router/app_routes.dart';
 import 'package:ascend/core/router/app_shell.dart';
+import 'package:ascend/features/backup/presentation/backup_screen.dart';
 import 'package:ascend/features/goals/presentation/goals_screen.dart';
 import 'package:ascend/features/home/presentation/home_screen.dart';
 import 'package:ascend/features/planner/presentation/planner_screen.dart';
@@ -69,6 +70,10 @@ final routerProvider = Provider<GoRouter>((ref) {
             ],
           ),
         ],
+      ),
+      GoRoute(
+        path: AppRoutes.backup,
+        builder: (context, state) => const BackupScreen(),
       ),
     ],
   );

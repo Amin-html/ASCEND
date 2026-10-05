@@ -134,8 +134,12 @@ void main() {
 
   test('backupFileName', () {
     expect(
-      backupFileName(DateTime(2026, 10, 4, 14, 5)),
-      'ascend-backup-20261004-1405.plannerbackup',
+      backupFileName(
+        DateTime(2026, 1, 2, 3, 4, 5),
+        prefix: 'safety',
+        withSeconds: true,
+      ),
+      'safety-20260102-030405.plannerbackup',
     );
     expect(
       backupFileName(DateTime(2026, 1, 2, 3, 4), prefix: 'safety'),

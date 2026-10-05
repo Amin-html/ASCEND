@@ -4,4 +4,5 @@ abstract final class AppRoutes {
   static const goals = '/goals';
   static const stats = '/stats';
   static const profile = '/profile';
+  static const backup = '/settings/backup';
 }
