@@ -21,6 +21,13 @@ class ProfileScreen extends StatelessWidget {
             padding: const EdgeInsets.all(AppSpacing.lg),
             children: [
               _MenuTile(
+                icon: Icons.repeat_rounded,
+                title: 'Habits',
+                subtitle: 'Build streaks day by day',
+                onTap: () => context.push(AppRoutes.habits),
+              ),
+              const SizedBox(height: AppSpacing.md),
+              _MenuTile(
                 icon: Icons.backup_rounded,
                 title: 'Data & Backup',
                 subtitle: 'Export and restore your data',

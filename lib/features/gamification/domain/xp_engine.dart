@@ -25,6 +25,8 @@ class XpEngine {
 
   int xpForMilestone() => config.milestoneXp;
 
+  int xpForHabit() => config.habitXp;
+
   int xpForDailyPlan() => config.dailyPlanBonus;
 
   /// Бонус за достижение ровно такой длины streak, иначе 0.

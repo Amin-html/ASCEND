@@ -51,6 +51,10 @@ void main() {
   });
 
   group('fixed rewards', () {
+    test('habit check-in', () {
+      expect(engine.xpForHabit(), 5);
+    });
+
     test('milestone and daily plan', () {
       expect(engine.xpForMilestone(), 100);
       expect(engine.xpForDailyPlan(), 20);

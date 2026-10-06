@@ -22,6 +22,7 @@ import 'package:ascend/shared/widgets/empty_state.dart';
 import 'package:ascend/shared/widgets/error_state.dart';
 import 'package:ascend/shared/widgets/progress_ring.dart';
 import 'package:ascend/shared/widgets/xp_bar.dart';
+import 'package:ascend/features/habits/presentation/home_habits_section.dart';
 
 const _maxTasksOnHome = 5;
 
@@ -161,6 +162,8 @@ class HomeScreen extends ConsumerWidget {
                     );
                   },
                 ),
+                const SizedBox(height: AppSpacing.xxl),
+                const HomeHabitsSection(),
               ],
             ),
           ),

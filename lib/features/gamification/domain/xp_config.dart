@@ -14,6 +14,7 @@ class XpConfig {
     this.streakBonuses = const {3: 10, 7: 30, 14: 50, 30: 100},
     this.focusMinutesPerXp = 5,
     this.focusMaxXpPerSession = 20,
+    this.habitXp = 5,
     this.levelBaseXp = 100,
     this.levelExponent = 1.5,
   });
@@ -36,6 +37,9 @@ class XpConfig {
   /// 1 XP за каждые N полных минут фокуса.
   final int focusMinutesPerXp;
   final int focusMaxXpPerSession;
+
+  /// XP за одну отметку привычки.
+  final int habitXp;
 
   /// XP для перехода с уровня L на L+1 = levelBaseXp * L^levelExponent.
   final int levelBaseXp;

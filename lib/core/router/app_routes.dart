@@ -5,6 +5,7 @@ abstract final class AppRoutes {
   static const stats = '/stats';
   static const profile = '/profile';
   static const backup = '/settings/backup';
+  static const habits = '/habits';
 
   static String goalDetail(String id) => '/goals/$id';
 }

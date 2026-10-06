@@ -4,9 +4,10 @@ import 'package:go_router/go_router.dart';
 import 'package:ascend/core/theme/app_colors.dart';
 import 'package:ascend/core/theme/app_dimens.dart';
 import 'package:ascend/core/theme/app_typography.dart';
-import 'package:ascend/shared/widgets/create_sheet.dart';
-import 'package:ascend/features/tasks/presentation/task_form_sheet.dart';
 import 'package:ascend/features/goals/presentation/goal_interactions.dart';
+import 'package:ascend/features/habits/presentation/habit_interactions.dart';
+import 'package:ascend/features/tasks/presentation/task_form_sheet.dart';
+import 'package:ascend/shared/widgets/create_sheet.dart';
 
 class _NavItem {
   const _NavItem(this.label, this.icon, this.selectedIcon);
@@ -28,6 +29,12 @@ const _items = <_NavItem>[
   _NavItem('Profile', Icons.person_outline_rounded, Icons.person_rounded),
 ];
 
+void _snack(BuildContext context, String message) {
+  ScaffoldMessenger.of(context)
+    ..clearSnackBars()
+    ..showSnackBar(SnackBar(content: Text(message)));
+}
+
 class AppShell extends StatelessWidget {
   const AppShell({required this.navigationShell, super.key});
 
@@ -43,29 +50,26 @@ class AppShell extends StatelessWidget {
     );
   }
 
+  Future<void> _createTask(BuildContext context) async {
+    final saved = await showTaskFormSheet(context);
+    if (saved && context.mounted) _snack(context, 'Task created');
+  }
+
   Future<void> _onCreate(BuildContext context) async {
     final action = await showCreateSheet(context);
     if (action == null || !context.mounted) return;
 
-    if (action == CreateAction.task) {
-      final saved = await showTaskFormSheet(context);
-      if (saved && context.mounted) {
-        ScaffoldMessenger.of(context)
-          ..clearSnackBars()
-          ..showSnackBar(const SnackBar(content: Text('Task created')));
-      }
-      return;
+    switch (action) {
+      case CreateAction.task:
+        await _createTask(context);
+      case CreateAction.goal:
+        await createGoalAndOpen(context);
+      case CreateAction.habit:
+        await createHabit(context);
+      case CreateAction.note:
+      // Заметки появятся на одном из следующих этапов.
+        _snack(context, '${action.title} is coming soon');
     }
-
-    if (action == CreateAction.goal) {
-      await createGoalAndOpen(context);
-      return;
-    }
-
-    // Остальные формы появятся на следующих этапах.
-    ScaffoldMessenger.of(context)
-      ..clearSnackBars()
-      ..showSnackBar(SnackBar(content: Text('${action.title} is coming soon')));
   }
 
   @override

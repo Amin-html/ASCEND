@@ -7,11 +7,15 @@ import 'package:ascend/features/gamification/data/gamification_providers.dart';
 import 'package:ascend/features/goals/data/goal_providers.dart';
 import 'package:ascend/features/goals/domain/goal_actions.dart';
 import 'package:ascend/features/goals/domain/goal_models.dart';
+import 'package:ascend/features/habits/data/habit_providers.dart';
+import 'package:ascend/features/habits/domain/habit_actions.dart';
+import 'package:ascend/features/habits/domain/habit_models.dart';
 import 'package:ascend/features/tasks/data/task_providers.dart';
 import 'package:ascend/features/tasks/domain/category.dart';
 import 'package:ascend/features/tasks/domain/task.dart';
 
 import 'fake_goal_actions.dart';
+import 'fake_habit_actions.dart';
 
 /// Приложение с подставленными данными, без SQLite.
 Widget testApp({
@@ -19,6 +23,8 @@ Widget testApp({
   int totalXp = 0,
   List<GoalWithMilestones> goals = const [],
   GoalActions? goalActions,
+  List<HabitProgress> habits = const [],
+  HabitActions? habitActions,
 }) {
   return ProviderScope(
     overrides: [
@@ -37,6 +43,10 @@ Widget testApp({
             Stream.value(goals.where((g) => g.goal.id == id).firstOrNull),
       ),
       goalActionsProvider.overrideWithValue(goalActions ?? FakeGoalActions()),
+      habitsProvider.overrideWith((ref) => Stream.value(habits)),
+      habitActionsProvider.overrideWithValue(
+        habitActions ?? FakeHabitActions(),
+      ),
     ],
     child: const AscendApp(),
   );

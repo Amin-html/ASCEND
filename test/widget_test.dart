@@ -40,11 +40,22 @@ void main() {
     expect(find.text('New habit'), findsOneWidget);
     expect(find.text('New note'), findsOneWidget);
 
+    await tester.tap(find.text('New note'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Capture a thought'), findsNothing);
+    expect(find.text('New note is coming soon'), findsOneWidget);
+  });
+
+  testWidgets('New habit opens the habit form', (tester) async {
+    await pumpApp(tester);
+
+    await tester.tap(find.byType(FloatingActionButton));
+    await tester.pumpAndSettle();
     await tester.tap(find.text('New habit'));
     await tester.pumpAndSettle();
 
-    expect(find.text('Build a streak day by day'), findsNothing);
-    expect(find.text('New habit is coming soon'), findsOneWidget);
+    expect(find.text('Create habit'), findsOneWidget);
   });
 
   testWidgets('New goal opens the goal form', (tester) async {
