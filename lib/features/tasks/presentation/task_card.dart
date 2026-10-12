@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 
+import 'package:ascend/core/router/app_routes.dart';
 import 'package:ascend/core/theme/app_colors.dart';
 import 'package:ascend/core/theme/app_dimens.dart';
 import 'package:ascend/core/utils/formatters.dart';
@@ -7,8 +9,9 @@ import 'package:ascend/features/tasks/domain/category.dart';
 import 'package:ascend/features/tasks/domain/task.dart';
 import 'package:ascend/features/tasks/presentation/task_labels.dart';
 import 'package:ascend/shared/widgets/app_card.dart';
+import 'package:ascend/shared/widgets/check_button.dart';
 
-enum _TaskMenu { edit, delete }
+enum _TaskMenu { edit, focus, delete }
 
 class TaskCard extends StatelessWidget {
   const TaskCard({
@@ -34,16 +37,11 @@ class TaskCard extends StatelessWidget {
     final minutes = task.estimatedMinutes;
 
     return AppCard(
-      padding: const EdgeInsets.fromLTRB(
-        AppSpacing.xs,
-        AppSpacing.xs,
-        AppSpacing.xs,
-        AppSpacing.xs,
-      ),
+      padding: const EdgeInsets.all(AppSpacing.xs),
       onTap: onEdit,
       child: Row(
         children: [
-          _CheckButton(done: done, onTap: onToggle),
+          CheckButton(done: done, onTap: onToggle),
           const SizedBox(width: AppSpacing.xs),
           Expanded(
             child: Padding(
@@ -124,58 +122,23 @@ class TaskCard extends StatelessWidget {
               switch (value) {
                 case _TaskMenu.edit:
                   onEdit();
+                case _TaskMenu.focus:
+                  context.push(AppRoutes.focusForTask(task.id));
                 case _TaskMenu.delete:
                   onDelete();
               }
             },
-            itemBuilder: (context) => const [
-              PopupMenuItem(value: _TaskMenu.edit, child: Text('Edit')),
-              PopupMenuItem(value: _TaskMenu.delete, child: Text('Delete')),
+            itemBuilder: (context) => [
+              const PopupMenuItem(value: _TaskMenu.edit, child: Text('Edit')),
+              if (!done)
+                const PopupMenuItem(
+                  value: _TaskMenu.focus,
+                  child: Text('Start focus'),
+                ),
+              const PopupMenuItem(value: _TaskMenu.delete, child: Text('Delete')),
             ],
           ),
         ],
-      ),
-    );
-  }
-}
-
-class _CheckButton extends StatelessWidget {
-  const _CheckButton({required this.done, required this.onTap});
-
-  final bool done;
-  final VoidCallback onTap;
-
-  @override
-  Widget build(BuildContext context) {
-    return Semantics(
-      button: true,
-      label: done ? 'Mark as not done' : 'Mark as done',
-      child: InkWell(
-        customBorder: const CircleBorder(),
-        onTap: onTap,
-        child: SizedBox(
-          width: 44,
-          height: 44,
-          child: Center(
-            child: AnimatedContainer(
-              duration: const Duration(milliseconds: 180),
-              curve: Curves.easeOut,
-              width: 24,
-              height: 24,
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                color: done ? AppColors.primary : Colors.transparent,
-                border: Border.all(
-                  color: done ? AppColors.primary : AppColors.textMuted,
-                  width: 1.6,
-                ),
-              ),
-              child: done
-                  ? const Icon(Icons.check_rounded, size: 16, color: Colors.white)
-                  : null,
-            ),
-          ),
-        ),
       ),
     );
   }

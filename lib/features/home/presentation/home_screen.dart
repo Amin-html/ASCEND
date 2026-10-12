@@ -9,8 +9,10 @@ import 'package:ascend/core/theme/app_dimens.dart';
 import 'package:ascend/core/theme/app_typography.dart';
 import 'package:ascend/core/utils/day_key.dart';
 import 'package:ascend/core/utils/formatters.dart';
+import 'package:ascend/features/focus/presentation/home_focus_card.dart';
 import 'package:ascend/features/gamification/data/gamification_providers.dart';
 import 'package:ascend/features/gamification/domain/level_progress.dart';
+import 'package:ascend/features/habits/presentation/home_habits_section.dart';
 import 'package:ascend/features/tasks/data/task_providers.dart';
 import 'package:ascend/features/tasks/domain/category.dart';
 import 'package:ascend/features/tasks/domain/task.dart';
@@ -22,7 +24,6 @@ import 'package:ascend/shared/widgets/empty_state.dart';
 import 'package:ascend/shared/widgets/error_state.dart';
 import 'package:ascend/shared/widgets/progress_ring.dart';
 import 'package:ascend/shared/widgets/xp_bar.dart';
-import 'package:ascend/features/habits/presentation/home_habits_section.dart';
 
 const _maxTasksOnHome = 5;
 
@@ -103,6 +104,8 @@ class HomeScreen extends ConsumerWidget {
                     ],
                   ),
                 ),
+                const SizedBox(height: AppSpacing.lg),
+                const HomeFocusCard(),
                 const SizedBox(height: AppSpacing.xxl),
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,

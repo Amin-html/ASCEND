@@ -76,6 +76,11 @@ void main() {
       expect(engine.xpForFocus(7200), 20);
       expect(engine.xpForFocus(-5), 0);
     });
+
+    test('focus sessions under a minute are not counted', () {
+      expect(engine.isFocusSessionCounted(59), isFalse);
+      expect(engine.isFocusSessionCounted(60), isTrue);
+    });
   });
 
   group('levels', () {

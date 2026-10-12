@@ -62,4 +62,21 @@ void main() {
     expect(find.text('Beginner'), findsOneWidget);
     expect(find.text('150 XP total'), findsOneWidget);
   });
+
+  testWidgets('shows the focus card', (tester) async {
+    useTallScreen(tester);
+    await tester.pumpWidget(testApp());
+    await tester.pumpAndSettle();
+
+    expect(find.text('Focus'), findsOneWidget);
+    expect(find.text('Start a focus session'), findsOneWidget);
+  });
+
+  testWidgets('focus card shows the time focused today', (tester) async {
+    useTallScreen(tester);
+    await tester.pumpWidget(testApp(focusSecondsToday: 5400));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Today: 1 h 30 min'), findsOneWidget);
+  });
 }

@@ -5,6 +5,7 @@ import 'package:ascend/features/backup/domain/backup_exceptions.dart';
 import 'package:ascend/features/backup/domain/backup_file_gateway.dart';
 import 'package:ascend/features/backup/domain/backup_models.dart';
 import 'package:ascend/features/backup/domain/safety_backup_store.dart';
+import 'package:ascend/core/utils/formatters.dart';
 
 enum FlowStatus { done, cancelled, failed }
 
@@ -129,7 +130,8 @@ class BackupFlow {
         );
         final s = header.summary;
         return FlowResult.done(
-          'Backup restored • ${s.tasks} tasks, ${s.goals} goals',
+          'Backup restored • ${plural(s.tasks, 'task')}, '
+              '${plural(s.goals, 'goal')}',
         );
       } on BackupWrongPasswordException catch (e) {
         error = e.message;

@@ -3,6 +3,9 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 import 'package:ascend/app.dart';
+import 'package:ascend/features/focus/data/focus_providers.dart';
+import 'package:ascend/features/focus/domain/focus_actions.dart';
+import 'package:ascend/features/focus/domain/focus_models.dart';
 import 'package:ascend/features/gamification/data/gamification_providers.dart';
 import 'package:ascend/features/goals/data/goal_providers.dart';
 import 'package:ascend/features/goals/domain/goal_actions.dart';
@@ -14,6 +17,7 @@ import 'package:ascend/features/tasks/data/task_providers.dart';
 import 'package:ascend/features/tasks/domain/category.dart';
 import 'package:ascend/features/tasks/domain/task.dart';
 
+import 'fake_focus_actions.dart';
 import 'fake_goal_actions.dart';
 import 'fake_habit_actions.dart';
 
@@ -25,6 +29,8 @@ Widget testApp({
   GoalActions? goalActions,
   List<HabitProgress> habits = const [],
   HabitActions? habitActions,
+  int focusSecondsToday = 0,
+  FocusActions? focusActions,
 }) {
   return ProviderScope(
     overrides: [
@@ -46,6 +52,15 @@ Widget testApp({
       habitsProvider.overrideWith((ref) => Stream.value(habits)),
       habitActionsProvider.overrideWithValue(
         habitActions ?? FakeHabitActions(),
+      ),
+      focusSecondsForDayProvider.overrideWith(
+            (ref, dayKey) => Stream.value(focusSecondsToday),
+      ),
+      recentFocusProvider.overrideWith(
+            (ref) => Stream.value(const <FocusSessionEntry>[]),
+      ),
+      focusActionsProvider.overrideWithValue(
+        focusActions ?? FakeFocusActions(),
       ),
     ],
     child: const AscendApp(),

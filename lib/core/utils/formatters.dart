@@ -22,3 +22,18 @@ String formatBytes(int bytes) {
   if (kb < 1024) return '${kb.toStringAsFixed(1)} KB';
   return '${(kb / 1024).toStringAsFixed(1)} MB';
 }
+
+/// «1 task», «2 tasks». Для неправильных форм передайте [many].
+String plural(int n, String one, [String? many]) {
+  return '$n ${n == 1 ? one : (many ?? '${one}s')}';
+}
+
+/// Часы таймера: 05:03 или 1:02:05.
+String formatClock(Duration d) {
+  final total = d.inSeconds < 0 ? 0 : d.inSeconds;
+  final h = total ~/ 3600;
+  final m = (total % 3600) ~/ 60;
+  final s = total % 60;
+  String two(int n) => n.toString().padLeft(2, '0');
+  return h > 0 ? '$h:${two(m)}:${two(s)}' : '${two(m)}:${two(s)}';
+}

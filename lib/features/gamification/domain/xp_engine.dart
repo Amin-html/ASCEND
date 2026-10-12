@@ -25,12 +25,16 @@ class XpEngine {
 
   int xpForMilestone() => config.milestoneXp;
 
-  int xpForHabit() => config.habitXp;
-
   int xpForDailyPlan() => config.dailyPlanBonus;
+
+  int xpForHabit() => config.habitXp;
 
   /// Бонус за достижение ровно такой длины streak, иначе 0.
   int xpForStreak(int streakDays) => config.streakBonuses[streakDays] ?? 0;
+
+  /// Достаточно ли длинная сессия, чтобы её сохранить.
+  bool isFocusSessionCounted(int seconds) =>
+      seconds >= config.focusMinSessionSeconds;
 
   int xpForFocus(int seconds) {
     if (seconds <= 0) return 0;
