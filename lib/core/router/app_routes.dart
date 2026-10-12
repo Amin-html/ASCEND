@@ -7,6 +7,7 @@ abstract final class AppRoutes {
   static const backup = '/settings/backup';
   static const habits = '/habits';
   static const focus = '/focus';
+  static const achievements = '/achievements';
 
   static String goalDetail(String id) => '/goals/$id';
 

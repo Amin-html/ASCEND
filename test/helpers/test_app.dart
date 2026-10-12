@@ -3,6 +3,9 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 import 'package:ascend/app.dart';
+import 'package:ascend/features/achievements/data/achievement_providers.dart';
+import 'package:ascend/features/achievements/domain/achievement_actions.dart';
+import 'package:ascend/features/achievements/domain/achievement_models.dart';
 import 'package:ascend/features/focus/data/focus_providers.dart';
 import 'package:ascend/features/focus/domain/focus_actions.dart';
 import 'package:ascend/features/focus/domain/focus_models.dart';
@@ -13,10 +16,13 @@ import 'package:ascend/features/goals/domain/goal_models.dart';
 import 'package:ascend/features/habits/data/habit_providers.dart';
 import 'package:ascend/features/habits/domain/habit_actions.dart';
 import 'package:ascend/features/habits/domain/habit_models.dart';
+import 'package:ascend/features/statistics/data/stats_providers.dart';
+import 'package:ascend/features/statistics/domain/stats_models.dart';
 import 'package:ascend/features/tasks/data/task_providers.dart';
 import 'package:ascend/features/tasks/domain/category.dart';
 import 'package:ascend/features/tasks/domain/task.dart';
 
+import 'fake_achievement_actions.dart';
 import 'fake_focus_actions.dart';
 import 'fake_goal_actions.dart';
 import 'fake_habit_actions.dart';
@@ -31,6 +37,10 @@ Widget testApp({
   HabitActions? habitActions,
   int focusSecondsToday = 0,
   FocusActions? focusActions,
+  AchievementCounts? counts,
+  Map<String, DateTime> unlocked = const {},
+  AchievementActions? achievementActions,
+  List<DayStat> stats = const [],
 }) {
   return ProviderScope(
     overrides: [
@@ -62,6 +72,16 @@ Widget testApp({
       focusActionsProvider.overrideWithValue(
         focusActions ?? FakeFocusActions(),
       ),
+      achievementCountsProvider.overrideWith(
+            (ref) => Stream.value(counts ?? AchievementCounts(totalXp: totalXp)),
+      ),
+      unlockedAchievementsProvider.overrideWith(
+            (ref) => Stream.value(unlocked),
+      ),
+      achievementActionsProvider.overrideWithValue(
+        achievementActions ?? FakeAchievementActions(),
+      ),
+      statsRangeProvider.overrideWith((ref, days) => Stream.value(stats)),
     ],
     child: const AscendApp(),
   );

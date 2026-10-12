@@ -37,3 +37,15 @@ String formatClock(Duration d) {
   String two(int n) => n.toString().padLeft(2, '0');
   return h > 0 ? '$h:${two(m)}:${two(s)}' : '${two(m)}:${two(s)}';
 }
+
+/// Короткая подпись дня недели: Mon, Tue...
+String weekdayAbbr(DateTime d) => DateFormat('EEE', 'en_US').format(d);
+
+/// Длительность в сокращённом виде: 45m, 2h, 1h 30m.
+String formatDurationShort(int seconds) {
+  final minutes = seconds < 0 ? 0 : seconds ~/ 60;
+  if (minutes < 60) return '${minutes}m';
+  final h = minutes ~/ 60;
+  final m = minutes % 60;
+  return m == 0 ? '${h}h' : '${h}h ${m}m';
+}

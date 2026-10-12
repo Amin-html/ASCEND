@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 
 import 'package:ascend/core/router/app_routes.dart';
 import 'package:ascend/core/router/app_shell.dart';
+import 'package:ascend/features/achievements/presentation/achievements_screen.dart';
 import 'package:ascend/features/backup/presentation/backup_screen.dart';
 import 'package:ascend/features/focus/presentation/focus_screen.dart';
 import 'package:ascend/features/goals/presentation/goal_detail_screen.dart';
@@ -95,6 +96,10 @@ final routerProvider = Provider<GoRouter>((ref) {
         builder: (context, state) => FocusScreen(
           taskId: state.uri.queryParameters['taskId'],
         ),
+      ),
+      GoRoute(
+        path: AppRoutes.achievements,
+        builder: (context, state) => const AchievementsScreen(),
       ),
     ],
   );

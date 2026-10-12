@@ -11,4 +11,10 @@ enum Rank {
 
   final String label;
   final int minLevel;
+
+  /// Следующий ранг или null, если это высший.
+  Rank? get next {
+    final i = index + 1;
+    return i < Rank.values.length ? Rank.values[i] : null;
+  }
 }
