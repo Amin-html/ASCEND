@@ -39,7 +39,7 @@ void main() {
     expect(find.text('Tasks done'), findsOneWidget);
     expect(find.text('37'), findsOneWidget);
     expect(find.text('Focus time'), findsOneWidget);
-    expect(find.text('2h'), findsOneWidget);
+    expect(find.text('2h 1m'), findsOneWidget);
     expect(find.text('Total XP'), findsOneWidget);
     expect(find.text('150'), findsOneWidget);
     expect(find.text('1 of 6'), findsOneWidget);
