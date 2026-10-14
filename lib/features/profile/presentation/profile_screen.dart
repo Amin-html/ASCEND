@@ -155,12 +155,12 @@ class ProfileScreen extends ConsumerWidget {
               ),
               const SizedBox(height: AppSpacing.xxl),
               _AchievementsPreview(unlocked: unlocked),
-              const SizedBox(height: AppSpacing.xxl),
+              const SizedBox(height: AppSpacing.md),
               _MenuTile(
-                icon: Icons.repeat_rounded,
-                title: 'Habits',
-                subtitle: 'Build streaks day by day',
-                onTap: () => context.push(AppRoutes.habits),
+                icon: Icons.notifications_rounded,
+                title: 'Notifications',
+                subtitle: 'Reminders and daily plan alerts',
+                onTap: () => context.push(AppRoutes.notifications),
               ),
               const SizedBox(height: AppSpacing.md),
               _MenuTile(

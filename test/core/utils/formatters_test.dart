@@ -19,4 +19,13 @@ void main() {
     expect(longDate(d), '3 October 2026');
     expect(shortDate(d), 'Sat, 3 Oct');
   });
+
+  test('timeLabel and minutesOfDayLabel', () {
+    expect(timeLabel(DateTime(2026, 10, 13, 9, 5)), '09:05');
+    expect(timeLabel(DateTime(2026, 10, 13, 18, 30)), '18:30');
+    expect(minutesOfDayLabel(0), '00:00');
+    expect(minutesOfDayLabel(20 * 60), '20:00');
+    expect(minutesOfDayLabel(18 * 60 + 30), '18:30');
+    expect(minutesOfDayLabel(-5), '00:00');
+  });
 }

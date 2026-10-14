@@ -35,6 +35,7 @@ class TaskCard extends StatelessWidget {
     final done = task.isCompleted;
     final cat = category;
     final minutes = task.estimatedMinutes;
+    final start = task.startAt;
 
     return AppCard(
       padding: const EdgeInsets.all(AppSpacing.xs),
@@ -77,6 +78,17 @@ class TaskCard extends StatelessWidget {
                             ),
                           ),
                           label: cat.name,
+                        ),
+                      if (start != null)
+                        _Meta(
+                          leading: Icon(
+                            task.reminderMinutesBefore != null
+                                ? Icons.notifications_active_rounded
+                                : Icons.alarm_rounded,
+                            size: 13,
+                            color: AppColors.textMuted,
+                          ),
+                          label: timeLabel(start),
                         ),
                       _Meta(
                         leading: Icon(

@@ -11,6 +11,7 @@ import 'package:ascend/features/goals/presentation/goal_detail_screen.dart';
 import 'package:ascend/features/goals/presentation/goals_screen.dart';
 import 'package:ascend/features/habits/presentation/habits_screen.dart';
 import 'package:ascend/features/home/presentation/home_screen.dart';
+import 'package:ascend/features/notifications/presentation/notification_settings_screen.dart';
 import 'package:ascend/features/planner/presentation/planner_screen.dart';
 import 'package:ascend/features/profile/presentation/profile_screen.dart';
 import 'package:ascend/features/statistics/presentation/statistics_screen.dart';
@@ -86,6 +87,10 @@ final routerProvider = Provider<GoRouter>((ref) {
       GoRoute(
         path: AppRoutes.backup,
         builder: (context, state) => const BackupScreen(),
+      ),
+      GoRoute(
+        path: AppRoutes.notifications,
+        builder: (context, state) => const NotificationSettingsScreen(),
       ),
       GoRoute(
         path: AppRoutes.habits,

@@ -3,6 +3,7 @@ import 'package:drift/drift.dart';
 import 'package:ascend/core/database/app_database.dart';
 import 'package:ascend/features/tasks/data/task_mappers.dart';
 import 'package:ascend/features/tasks/domain/task.dart';
+import 'package:ascend/features/tasks/domain/task_enums.dart';
 import 'package:ascend/features/tasks/domain/task_repository.dart';
 
 class DriftTaskRepository implements TaskRepository {
@@ -27,6 +28,25 @@ class DriftTaskRepository implements TaskRepository {
   Stream<List<Task>> watchAll() {
     final query = _db.select(_db.tasks)
       ..orderBy([(t) => OrderingTerm.desc(t.createdAt)]);
+    return query.watch().map((rows) => rows.map(taskFromRow).toList());
+  }
+
+  @override
+  Stream<List<Task>> watchOpenInRange(String fromDayKey, String toDayKey) {
+    final query = _db.select(_db.tasks)
+      ..where(
+            (t) =>
+        t.dayKey.isBetweenValues(fromDayKey, toDayKey) &
+        t.status.isIn([
+          TaskStatus.todo.index,
+          TaskStatus.inProgress.index,
+        ]),
+      )
+      ..orderBy([
+            (t) => OrderingTerm.asc(t.dayKey),
+            (t) => OrderingTerm.asc(t.startAt),
+            (t) => OrderingTerm.asc(t.createdAt),
+      ]);
     return query.watch().map((rows) => rows.map(taskFromRow).toList());
   }
 

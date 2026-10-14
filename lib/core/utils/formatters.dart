@@ -49,3 +49,13 @@ String formatDurationShort(int seconds) {
   final m = minutes % 60;
   return m == 0 ? '${h}h' : '${h}h ${m}m';
 }
+
+/// Время суток: 09:05.
+String timeLabel(DateTime d) => DateFormat('HH:mm', 'en_US').format(d);
+
+/// Минуты от полуночи в виде 20:00.
+String minutesOfDayLabel(int minutes) {
+  final m = minutes < 0 ? 0 : minutes % 1440;
+  String two(int n) => n.toString().padLeft(2, '0');
+  return '${two(m ~/ 60)}:${two(m % 60)}';
+}

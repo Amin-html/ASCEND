@@ -5,6 +5,7 @@ import 'package:ascend/core/router/app_router.dart';
 import 'package:ascend/core/services/messenger.dart';
 import 'package:ascend/core/theme/app_theme.dart';
 import 'package:ascend/features/achievements/presentation/achievement_watcher.dart';
+import 'package:ascend/features/notifications/presentation/notification_sync.dart';
 
 class AscendApp extends ConsumerWidget {
   const AscendApp({super.key});
@@ -20,8 +21,9 @@ class AscendApp extends ConsumerWidget {
       theme: AppTheme.dark,
       darkTheme: AppTheme.dark,
       scaffoldMessengerKey: appMessengerKey,
-      builder: (context, child) =>
-          AchievementWatcher(child: child ?? const SizedBox.shrink()),
+      builder: (context, child) => AchievementWatcher(
+        child: NotificationSync(child: child ?? const SizedBox.shrink()),
+      ),
       routerConfig: router,
     );
   }

@@ -8,6 +8,8 @@ import 'package:ascend/core/theme/app_dimens.dart';
 import 'package:ascend/core/utils/day_key.dart';
 import 'package:ascend/core/utils/formatters.dart';
 import 'package:ascend/features/gamification/data/gamification_providers.dart';
+import 'package:ascend/features/notifications/presentation/notification_labels.dart';
+import 'package:ascend/features/settings/data/settings_providers.dart';
 import 'package:ascend/features/tasks/data/task_providers.dart';
 import 'package:ascend/features/tasks/domain/category.dart';
 import 'package:ascend/features/tasks/domain/task.dart';
@@ -50,6 +52,10 @@ class _TaskFormSheetState extends ConsumerState<TaskFormSheet> {
   late TaskPriority _priority;
   String? _dayKey;
   int? _minutes;
+  TimeOfDay? _time;
+
+  /// За сколько минут напомнить. null: без напоминания.
+  int? _reminder;
   String? _titleError;
   bool _saving = false;
 
@@ -65,6 +71,20 @@ class _TaskFormSheetState extends ConsumerState<TaskFormSheet> {
     _dayKey = t != null
         ? t.dayKey
         : (widget.initialDayKey ?? dayKeyOf(ref.read(clockProvider).now()));
+
+    final start = t?.startAt;
+    _time = start == null
+        ? null
+        : TimeOfDay(hour: start.hour, minute: start.minute);
+
+    if (t != null) {
+      _reminder = t.reminderMinutesBefore;
+    } else {
+      final settings = ref.read(settingsProvider);
+      _reminder = settings.notificationsEnabled
+          ? settings.defaultReminderMinutesBefore
+          : null;
+    }
   }
 
   @override
@@ -90,6 +110,14 @@ class _TaskFormSheetState extends ConsumerState<TaskFormSheet> {
     }
   }
 
+  Future<void> _pickTime() async {
+    final picked = await showTimePicker(
+      context: context,
+      initialTime: _time ?? const TimeOfDay(hour: 9, minute: 0),
+    );
+    if (picked != null && mounted) setState(() => _time = picked);
+  }
+
   Future<void> _save() async {
     final title = _title.text.trim();
     if (title.isEmpty) {
@@ -111,6 +139,14 @@ class _TaskFormSheetState extends ConsumerState<TaskFormSheet> {
         estimatedMinutes: _minutes,
       );
 
+      final day = _dayKey;
+      final time = _time;
+      DateTime? startAt;
+      if (day != null && time != null) {
+        final d = dateFromDayKey(day);
+        startAt = DateTime(d.year, d.month, d.day, time.hour, time.minute);
+      }
+
       final task = Task(
         id: existing?.id ?? ref.read(idGeneratorProvider).newId(),
         title: title,
@@ -118,12 +154,12 @@ class _TaskFormSheetState extends ConsumerState<TaskFormSheet> {
         categoryId: _categoryId,
         priority: _priority,
         status: existing?.status ?? TaskStatus.todo,
-        dayKey: _dayKey,
-        startAt: existing?.startAt,
+        dayKey: day,
+        startAt: startAt,
         estimatedMinutes: _minutes,
         actualMinutes: existing?.actualMinutes,
         xpReward: xp,
-        reminderMinutesBefore: existing?.reminderMinutesBefore,
+        reminderMinutesBefore: startAt == null ? null : _reminder,
         completedAt: existing?.completedAt,
         goalId: existing?.goalId,
         milestoneId: existing?.milestoneId,
@@ -134,7 +170,7 @@ class _TaskFormSheetState extends ConsumerState<TaskFormSheet> {
 
       await ref.read(taskActionsProvider).save(task);
       if (mounted) Navigator.of(context).pop(true);
-    } catch (error) {
+    } on Object {
       if (!mounted) return;
       setState(() => _saving = false);
       ScaffoldMessenger.of(context).showSnackBar(
@@ -154,12 +190,14 @@ class _TaskFormSheetState extends ConsumerState<TaskFormSheet> {
         ref.watch(categoriesProvider).value ?? const <Category>[];
     final existing = widget.task;
     final dayKey = _dayKey;
+    final time = _time;
 
     final reward = existing != null && existing.isCompleted
         ? existing.xpReward
         : engine.xpForNewTask(priority: _priority, estimatedMinutes: _minutes);
     final isCustomDay =
         dayKey != null && dayKey != todayKey && dayKey != tomorrowKey;
+    final reminderOptions = ({...reminderPresets, ?_reminder}.toList()..sort());
 
     return Padding(
       padding: EdgeInsets.only(bottom: MediaQuery.viewInsetsOf(context).bottom),
@@ -281,6 +319,56 @@ class _TaskFormSheetState extends ConsumerState<TaskFormSheet> {
                 ),
               ],
             ),
+            if (dayKey != null) ...[
+              const _Label('Time'),
+              Wrap(
+                spacing: AppSpacing.sm,
+                runSpacing: AppSpacing.sm,
+                children: [
+                  ChoiceChip(
+                    showCheckmark: false,
+                    label: const Text('No time'),
+                    selected: time == null,
+                    onSelected: (_) => setState(() => _time = null),
+                  ),
+                  ChoiceChip(
+                    showCheckmark: false,
+                    avatar: const Icon(Icons.schedule_rounded, size: 14),
+                    label: Text(
+                      time == null
+                          ? 'Set time'
+                          : timeLabel(
+                        DateTime(2000, 1, 1, time.hour, time.minute),
+                      ),
+                    ),
+                    selected: time != null,
+                    onSelected: (_) => _pickTime(),
+                  ),
+                ],
+              ),
+              if (time != null) ...[
+                const _Label('Reminder'),
+                Wrap(
+                  spacing: AppSpacing.sm,
+                  runSpacing: AppSpacing.sm,
+                  children: [
+                    ChoiceChip(
+                      showCheckmark: false,
+                      label: const Text('Off'),
+                      selected: _reminder == null,
+                      onSelected: (_) => setState(() => _reminder = null),
+                    ),
+                    for (final m in reminderOptions)
+                      ChoiceChip(
+                        showCheckmark: false,
+                        label: Text(reminderLabel(m)),
+                        selected: _reminder == m,
+                        onSelected: (_) => setState(() => _reminder = m),
+                      ),
+                  ],
+                ),
+              ],
+            ],
             const _Label('Estimated time'),
             Wrap(
               spacing: AppSpacing.sm,

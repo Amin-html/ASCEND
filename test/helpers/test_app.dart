@@ -16,6 +16,10 @@ import 'package:ascend/features/goals/domain/goal_models.dart';
 import 'package:ascend/features/habits/data/habit_providers.dart';
 import 'package:ascend/features/habits/domain/habit_actions.dart';
 import 'package:ascend/features/habits/domain/habit_models.dart';
+import 'package:ascend/features/notifications/data/notification_providers.dart';
+import 'package:ascend/features/notifications/domain/notification_service.dart';
+import 'package:ascend/features/settings/data/settings_providers.dart';
+import 'package:ascend/features/settings/domain/app_settings.dart';
 import 'package:ascend/features/statistics/data/stats_providers.dart';
 import 'package:ascend/features/statistics/domain/stats_models.dart';
 import 'package:ascend/features/tasks/data/task_providers.dart';
@@ -26,6 +30,8 @@ import 'fake_achievement_actions.dart';
 import 'fake_focus_actions.dart';
 import 'fake_goal_actions.dart';
 import 'fake_habit_actions.dart';
+import 'fake_notification_service.dart';
+import 'fakes.dart';
 
 /// Приложение с подставленными данными, без SQLite.
 Widget testApp({
@@ -41,10 +47,13 @@ Widget testApp({
   Map<String, DateTime> unlocked = const {},
   AchievementActions? achievementActions,
   List<DayStat> stats = const [],
+  AppSettings settings = const AppSettings(),
+  NotificationService? notifications,
 }) {
   return ProviderScope(
     overrides: [
       tasksByDayProvider.overrideWith((ref, dayKey) => Stream.value(tasks)),
+      openTasksWindowProvider.overrideWith((ref) => Stream.value(tasks)),
       categoriesProvider.overrideWith(
             (ref) => Stream.value(const <Category>[]),
       ),
@@ -82,6 +91,12 @@ Widget testApp({
         achievementActions ?? FakeAchievementActions(),
       ),
       statsRangeProvider.overrideWith((ref, days) => Stream.value(stats)),
+      settingsRepositoryProvider.overrideWithValue(
+        InMemorySettingsRepository(settings),
+      ),
+      notificationServiceProvider.overrideWithValue(
+        notifications ?? FakeNotificationService(),
+      ),
     ],
     child: const AscendApp(),
   );
