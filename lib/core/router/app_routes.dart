@@ -12,6 +12,8 @@ abstract final class AppRoutes {
 
   static String goalDetail(String id) => '/goals/$id';
 
+  static String taskDetail(String id) => '/tasks/${Uri.encodeComponent(id)}';
+
   static String focusForTask(String taskId) =>
       Uri(path: focus, queryParameters: {'taskId': taskId}).toString();
 }

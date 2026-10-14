@@ -15,6 +15,7 @@ import 'package:ascend/features/notifications/presentation/notification_settings
 import 'package:ascend/features/planner/presentation/planner_screen.dart';
 import 'package:ascend/features/profile/presentation/profile_screen.dart';
 import 'package:ascend/features/statistics/presentation/statistics_screen.dart';
+import 'package:ascend/features/tasks/presentation/task_detail_screen.dart';
 import 'package:ascend/shared/widgets/empty_state.dart';
 
 final routerProvider = Provider<GoRouter>((ref) {
@@ -105,6 +106,12 @@ final routerProvider = Provider<GoRouter>((ref) {
       GoRoute(
         path: AppRoutes.achievements,
         builder: (context, state) => const AchievementsScreen(),
+      ),
+      GoRoute(
+        path: '/tasks/:id',
+        builder: (context, state) => TaskDetailScreen(
+          taskId: state.pathParameters['id']!,
+        ),
       ),
     ],
   );

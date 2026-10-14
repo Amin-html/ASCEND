@@ -4,6 +4,7 @@ import 'package:ascend/features/notifications/domain/notification_models.dart';
 import 'package:ascend/features/settings/domain/app_settings.dart';
 import 'package:ascend/features/tasks/domain/task.dart';
 import 'package:ascend/features/tasks/domain/task_enums.dart';
+import 'package:ascend/features/notifications/domain/notification_payload.dart';
 
 const int _idMask = 0x3FFFFFFF;
 
@@ -72,7 +73,7 @@ List<PlannedNotification> planNotifications({
             ? 'Starts now'
             : 'Starts in ${formatMinutes(lead)} (at ${timeLabel(start)})',
         at: at,
-        payload: task.id,
+        payload: taskPayload(task.id),
       ),
     );
   }
@@ -100,6 +101,7 @@ List<PlannedNotification> planNotifications({
           title: "Today's plan",
           body: 'You still have ${plural(open, 'task')} to finish today.',
           at: at,
+          payload: planPayload,
         ),
       );
     }

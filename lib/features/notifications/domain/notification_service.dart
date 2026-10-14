@@ -12,4 +12,11 @@ abstract interface class NotificationService {
 
   /// Планирует тестовое уведомление через несколько секунд.
   Future<bool> showTest();
+
+  /// payload уведомлений, на которые нажали, пока приложение работает.
+  Stream<String> get taps;
+
+  /// payload уведомления, от нажатия на которое запустилось приложение.
+  /// Вызывать один раз при старте.
+  Future<String?> takeLaunchPayload();
 }

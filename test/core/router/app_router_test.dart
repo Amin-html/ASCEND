@@ -44,6 +44,7 @@ void main() {
       AppRoutes.focus,
       AppRoutes.achievements,
       '/goals/:id',
+      '/tasks/:id',
     ];
 
     for (final path in expected) {

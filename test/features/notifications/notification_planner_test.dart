@@ -63,7 +63,7 @@ void main() {
       expect(plan.single.title, 'Call Anna');
       expect(plan.single.at, DateTime(2026, 10, 13, 17, 30));
       expect(plan.single.body, 'Starts in 30 min (at 18:00)');
-      expect(plan.single.payload, 'a');
+      expect(plan.single.payload, 'task:a');
     });
 
     test('a reminder at the start time says so', () {
@@ -150,6 +150,7 @@ void main() {
       expect(plan.single.at, DateTime(2026, 10, 13, 20));
       expect(plan.single.body, 'You still have 2 tasks to finish today.');
       expect(plan.single.id, dailyPlanIdBase);
+      expect(plan.single.payload, 'plan');
     });
 
     test('a single task uses the singular', () {

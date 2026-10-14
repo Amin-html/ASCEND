@@ -25,12 +25,14 @@ import 'package:ascend/features/statistics/domain/stats_models.dart';
 import 'package:ascend/features/tasks/data/task_providers.dart';
 import 'package:ascend/features/tasks/domain/category.dart';
 import 'package:ascend/features/tasks/domain/task.dart';
+import 'package:ascend/features/tasks/domain/task_actions.dart';
 
 import 'fake_achievement_actions.dart';
 import 'fake_focus_actions.dart';
 import 'fake_goal_actions.dart';
 import 'fake_habit_actions.dart';
 import 'fake_notification_service.dart';
+import 'fake_task_actions.dart';
 import 'fakes.dart';
 
 /// Приложение с подставленными данными, без SQLite.
@@ -49,10 +51,15 @@ Widget testApp({
   List<DayStat> stats = const [],
   AppSettings settings = const AppSettings(),
   NotificationService? notifications,
+  TaskActions? taskActions,
 }) {
   return ProviderScope(
     overrides: [
       tasksByDayProvider.overrideWith((ref, dayKey) => Stream.value(tasks)),
+      taskByIdProvider.overrideWith(
+            (ref, id) => Stream.value(tasks.where((t) => t.id == id).firstOrNull),
+      ),
+      taskActionsProvider.overrideWithValue(taskActions ?? FakeTaskActions()),
       openTasksWindowProvider.overrideWith((ref) => Stream.value(tasks)),
       categoriesProvider.overrideWith(
             (ref) => Stream.value(const <Category>[]),

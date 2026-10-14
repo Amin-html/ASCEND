@@ -8,6 +8,9 @@ abstract interface class TaskRepository {
   /// [fromDayKey, toDayKey] включительно, по дню и времени.
   Stream<List<Task>> watchOpenInRange(String fromDayKey, String toDayKey);
 
+  /// null, если задачи нет (в том числе после удаления).
+  Stream<Task?> watchById(String id);
+
   Future<Task?> getById(String id);
   Future<void> upsert(Task task);
   Future<void> delete(String id);

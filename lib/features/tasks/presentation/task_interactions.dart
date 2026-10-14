@@ -1,12 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import 'package:ascend/core/theme/app_colors.dart';
 import 'package:ascend/features/gamification/domain/completion_result.dart';
 import 'package:ascend/features/gamification/presentation/level_up_dialog.dart';
 import 'package:ascend/features/tasks/data/task_providers.dart';
 import 'package:ascend/features/tasks/domain/task.dart';
 import 'package:ascend/features/tasks/presentation/task_form_sheet.dart';
+import 'package:ascend/shared/widgets/confirm_dialog.dart';
 
 String rewardMessage(CompletionResult r) {
   final parts = <String>['+${r.xpGained} XP'];
@@ -59,32 +59,21 @@ Future<void> openTaskForm(
     );
 }
 
-Future<void> confirmDeleteTask(
+/// Спрашивает подтверждение и удаляет задачу. true: задача удалена.
+Future<bool> confirmDeleteTask(
     BuildContext context,
     WidgetRef ref,
     Task task,
     ) async {
-  final ok = await showDialog<bool>(
-    context: context,
-    builder: (context) => AlertDialog(
-      title: const Text('Delete task?'),
-      content: Text(
-        '"${task.title}" will be removed'
-            '${task.isCompleted ? ' together with its XP' : ''}.',
-      ),
-      actions: [
-        TextButton(
-          onPressed: () => Navigator.of(context).pop(false),
-          child: const Text('Cancel'),
-        ),
-        TextButton(
-          onPressed: () => Navigator.of(context).pop(true),
-          style: TextButton.styleFrom(foregroundColor: AppColors.danger),
-          child: const Text('Delete'),
-        ),
-      ],
-    ),
+  final ok = await showConfirmDialog(
+    context,
+    title: 'Delete task?',
+    message: '"${task.title}" will be removed'
+        '${task.isCompleted ? ' together with its XP' : ''}.',
+    confirmLabel: 'Delete',
+    destructive: true,
   );
-  if (ok != true || !context.mounted) return;
+  if (!ok || !context.mounted) return false;
   await ref.read(taskActionsProvider).delete(task.id);
+  return true;
 }

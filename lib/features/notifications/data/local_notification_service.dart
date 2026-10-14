@@ -1,9 +1,12 @@
+import 'dart:async';
+
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:timezone/timezone.dart' as tz;
 
 import 'package:ascend/features/notifications/domain/notification_models.dart';
 import 'package:ascend/features/notifications/domain/notification_planner.dart';
 import 'package:ascend/features/notifications/domain/notification_service.dart';
+import 'package:ascend/features/notifications/domain/notification_payload.dart';
 
 /// Реализация на flutter_local_notifications. Любая ошибка платформы
 /// превращается в «уведомления недоступны», приложение продолжает работать.
@@ -28,7 +31,16 @@ class LocalNotificationService implements NotificationService {
   );
 
   final FlutterLocalNotificationsPlugin _plugin;
+  final StreamController<String> _taps = StreamController<String>.broadcast();
   Future<bool>? _init;
+
+  @override
+  Stream<String> get taps => _taps.stream;
+
+  void _onResponse(NotificationResponse response) {
+    final payload = response.payload;
+    if (payload != null && payload.isNotEmpty) _taps.add(payload);
+  }
 
   @override
   Future<bool> initialize() => _init ??= _doInitialize();
@@ -55,10 +67,24 @@ class LocalNotificationService implements NotificationService {
             guid: _windowsGuid,
           ),
         ),
+        onDidReceiveNotificationResponse: _onResponse,
       );
       return ok ?? true;
     } on Object {
       return false;
+    }
+  }
+
+  @override
+  Future<String?> takeLaunchPayload() async {
+    if (!await initialize()) return null;
+    try {
+      final details = await _plugin.getNotificationAppLaunchDetails();
+      if (details == null || !details.didNotificationLaunchApp) return null;
+      final payload = details.notificationResponse?.payload;
+      return (payload == null || payload.isEmpty) ? null : payload;
+    } on Object {
+      return null;
     }
   }
 
@@ -120,6 +146,7 @@ class LocalNotificationService implements NotificationService {
         title: 'ASCEND',
         body: 'Notifications are working.',
         at: DateTime.now().add(const Duration(seconds: 3)),
+        payload: planPayload,
       ),
     );
   }

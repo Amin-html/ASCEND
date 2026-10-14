@@ -51,6 +51,14 @@ class DriftTaskRepository implements TaskRepository {
   }
 
   @override
+  Stream<Task?> watchById(String id) {
+    final query = _db.select(_db.tasks)..where((t) => t.id.equals(id));
+    return query
+        .watchSingleOrNull()
+        .map((row) => row == null ? null : taskFromRow(row));
+  }
+
+  @override
   Future<Task?> getById(String id) async {
     final row = await (_db.select(_db.tasks)..where((t) => t.id.equals(id)))
         .getSingleOrNull();

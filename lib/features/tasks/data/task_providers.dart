@@ -33,6 +33,10 @@ final tasksByDayProvider = StreamProvider.family<List<Task>, String>(
       (ref, dayKey) => ref.watch(taskRepositoryProvider).watchByDay(dayKey),
 );
 
+final taskByIdProvider = StreamProvider.family<Task?, String>(
+      (ref, id) => ref.watch(taskRepositoryProvider).watchById(id),
+);
+
 final categoriesProvider = StreamProvider<List<Category>>(
       (ref) => ref.watch(categoryRepositoryProvider).watchAll(),
 );
