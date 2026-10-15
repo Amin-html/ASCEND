@@ -81,7 +81,10 @@ void main() {
     await tester.pumpWidget(
       testApp(
         tasks: [tomorrowTask()],
-        settings: const AppSettings(notificationsEnabled: false),
+        settings: const AppSettings(
+          notificationsEnabled: false,
+          onboardingCompleted: true,
+        ),
         notifications: service,
       ),
     );

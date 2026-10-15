@@ -4,6 +4,9 @@ import 'package:go_router/go_router.dart';
 
 import 'package:ascend/core/router/app_router.dart';
 import 'package:ascend/core/router/app_routes.dart';
+import 'package:ascend/features/settings/data/settings_providers.dart';
+
+import '../../helpers/fakes.dart';
 
 Iterable<String> collectPaths(
     List<RouteBase> routes, [
@@ -26,13 +29,20 @@ Iterable<String> collectPaths(
 
 void main() {
   test('every route from AppRoutes is registered', () {
-    final container = ProviderContainer();
+    final container = ProviderContainer(
+      overrides: [
+        settingsRepositoryProvider.overrideWithValue(
+          InMemorySettingsRepository(),
+        ),
+      ],
+    );
     addTearDown(container.dispose);
 
     final router = container.read(routerProvider);
     final paths = collectPaths(router.configuration.routes).toSet();
 
     const expected = [
+      AppRoutes.welcome,
       AppRoutes.home,
       AppRoutes.planner,
       AppRoutes.goals,

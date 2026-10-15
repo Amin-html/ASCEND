@@ -13,6 +13,7 @@ import 'package:ascend/features/achievements/data/achievement_providers.dart';
 import 'package:ascend/features/achievements/domain/achievement_models.dart';
 import 'package:ascend/features/achievements/presentation/achievement_icons.dart';
 import 'package:ascend/features/gamification/data/gamification_providers.dart';
+import 'package:ascend/features/profile/presentation/profile_header.dart';
 import 'package:ascend/shared/widgets/app_card.dart';
 import 'package:ascend/shared/widgets/progress_ring.dart';
 import 'package:ascend/shared/widgets/stat_tile.dart';
@@ -46,6 +47,8 @@ class ProfileScreen extends ConsumerWidget {
               AppSpacing.xxxl,
             ),
             children: [
+              const ProfileHeader(),
+              const SizedBox(height: AppSpacing.lg),
               AppCard(
                 glow: true,
                 child: Row(
@@ -155,6 +158,13 @@ class ProfileScreen extends ConsumerWidget {
               ),
               const SizedBox(height: AppSpacing.xxl),
               _AchievementsPreview(unlocked: unlocked),
+              const SizedBox(height: AppSpacing.xxl),
+              _MenuTile(
+                icon: Icons.repeat_rounded,
+                title: 'Habits',
+                subtitle: 'Build streaks day by day',
+                onTap: () => context.push(AppRoutes.habits),
+              ),
               const SizedBox(height: AppSpacing.md),
               _MenuTile(
                 icon: Icons.notifications_rounded,
@@ -186,7 +196,8 @@ class _AchievementsPreview extends StatelessWidget {
   Widget build(BuildContext context) {
     final text = Theme.of(context).textTheme;
     final total = achievementDefs.length;
-    final done = achievementDefs.where((d) => unlocked.containsKey(d.code)).length;
+    final done =
+        achievementDefs.where((d) => unlocked.containsKey(d.code)).length;
 
     return AppCard(
       onTap: () => context.push(AppRoutes.achievements),

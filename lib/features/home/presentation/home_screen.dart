@@ -24,6 +24,7 @@ import 'package:ascend/shared/widgets/empty_state.dart';
 import 'package:ascend/shared/widgets/error_state.dart';
 import 'package:ascend/shared/widgets/progress_ring.dart';
 import 'package:ascend/shared/widgets/xp_bar.dart';
+import 'package:ascend/features/profile/data/profile_providers.dart';
 
 const _maxTasksOnHome = 5;
 
@@ -51,6 +52,7 @@ class HomeScreen extends ConsumerWidget {
         ref.watch(categoriesProvider).value ?? const <Category>[];
     final categoryById = {for (final c in categories) c.id: c};
     final text = Theme.of(context).textTheme;
+    final name = ref.watch(profileProvider).value?.name ?? '';
 
     return Scaffold(
       body: SafeArea(
@@ -66,7 +68,14 @@ class HomeScreen extends ConsumerWidget {
                 96,
               ),
               children: [
-                Text(_greeting(now.hour), style: text.headlineMedium),
+                Text(
+                  name.isEmpty
+                      ? _greeting(now.hour)
+                      : '${_greeting(now.hour)}, $name',
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
+                  style: text.headlineMedium,
+                ),
                 const SizedBox(height: AppSpacing.xs),
                 Text(
                   longDate(now),

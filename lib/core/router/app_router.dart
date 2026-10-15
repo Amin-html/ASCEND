@@ -14,13 +14,38 @@ import 'package:ascend/features/home/presentation/home_screen.dart';
 import 'package:ascend/features/notifications/presentation/notification_settings_screen.dart';
 import 'package:ascend/features/planner/presentation/planner_screen.dart';
 import 'package:ascend/features/profile/presentation/profile_screen.dart';
+import 'package:ascend/features/profile/presentation/welcome_screen.dart';
+import 'package:ascend/features/settings/data/settings_providers.dart';
 import 'package:ascend/features/statistics/presentation/statistics_screen.dart';
 import 'package:ascend/features/tasks/presentation/task_detail_screen.dart';
 import 'package:ascend/shared/widgets/empty_state.dart';
 
 final routerProvider = Provider<GoRouter>((ref) {
+  // Роутер перепроверяет доступ, когда меняется «знакомство пройдено»
+  // (например, после восстановления из backup).
+  final refresh = ValueNotifier<int>(0);
+  ref.listen<bool>(
+    settingsProvider.select((s) => s.onboardingCompleted),
+        (previous, next) => refresh.value++,
+  );
+
   final router = GoRouter(
     initialLocation: AppRoutes.home,
+    refreshListenable: refresh,
+    redirect: (context, state) {
+      final done = ref.read(settingsProvider).onboardingCompleted;
+      final path = state.uri.path;
+      final onWelcome = path == AppRoutes.welcome;
+
+      if (!done) {
+        // До знакомства доступны только Welcome и экран backup:
+        // на новом устройстве можно сразу восстановить данные.
+        return (onWelcome || path == AppRoutes.backup)
+            ? null
+            : AppRoutes.welcome;
+      }
+      return onWelcome ? AppRoutes.home : null;
+    },
     errorBuilder: (context, state) => Scaffold(
       body: EmptyState(
         icon: Icons.explore_off_rounded,
@@ -31,6 +56,10 @@ final routerProvider = Provider<GoRouter>((ref) {
       ),
     ),
     routes: [
+      GoRoute(
+        path: AppRoutes.welcome,
+        builder: (context, state) => const WelcomeScreen(),
+      ),
       StatefulShellRoute.indexedStack(
         builder: (context, state, navigationShell) =>
             AppShell(navigationShell: navigationShell),
@@ -115,6 +144,10 @@ final routerProvider = Provider<GoRouter>((ref) {
       ),
     ],
   );
-  ref.onDispose(router.dispose);
+
+  ref.onDispose(() {
+    router.dispose();
+    refresh.dispose();
+  });
   return router;
 });

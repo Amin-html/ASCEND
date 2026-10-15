@@ -68,8 +68,8 @@ class NotificationSettingsScreen extends ConsumerWidget {
         SnackBar(
           content: Text(
             ok
-                ? 'Test notification scheduled. It should appear in a few seconds.'
-                : 'Could not schedule a notification on this device.',
+                ? 'Test sent: one notification right now and another in about 5 seconds.'
+                : 'Could not send a notification on this device.',
           ),
         ),
       );

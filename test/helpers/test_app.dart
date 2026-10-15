@@ -6,6 +6,8 @@ import 'package:ascend/app.dart';
 import 'package:ascend/features/achievements/data/achievement_providers.dart';
 import 'package:ascend/features/achievements/domain/achievement_actions.dart';
 import 'package:ascend/features/achievements/domain/achievement_models.dart';
+import 'package:ascend/features/backup/data/backup_providers.dart';
+import 'package:ascend/features/backup/domain/safety_backup_store.dart';
 import 'package:ascend/features/focus/data/focus_providers.dart';
 import 'package:ascend/features/focus/domain/focus_actions.dart';
 import 'package:ascend/features/focus/domain/focus_models.dart';
@@ -18,6 +20,9 @@ import 'package:ascend/features/habits/domain/habit_actions.dart';
 import 'package:ascend/features/habits/domain/habit_models.dart';
 import 'package:ascend/features/notifications/data/notification_providers.dart';
 import 'package:ascend/features/notifications/domain/notification_service.dart';
+import 'package:ascend/features/profile/data/profile_providers.dart';
+import 'package:ascend/features/profile/domain/profile_actions.dart';
+import 'package:ascend/features/profile/domain/user_profile.dart';
 import 'package:ascend/features/settings/data/settings_providers.dart';
 import 'package:ascend/features/settings/domain/app_settings.dart';
 import 'package:ascend/features/statistics/data/stats_providers.dart';
@@ -32,10 +37,12 @@ import 'fake_focus_actions.dart';
 import 'fake_goal_actions.dart';
 import 'fake_habit_actions.dart';
 import 'fake_notification_service.dart';
+import 'fake_profile_actions.dart';
 import 'fake_task_actions.dart';
 import 'fakes.dart';
 
 /// Приложение с подставленными данными, без SQLite.
+/// По умолчанию знакомство уже пройдено: приложение стартует с Home.
 Widget testApp({
   List<Task> tasks = const [],
   int totalXp = 0,
@@ -49,9 +56,11 @@ Widget testApp({
   Map<String, DateTime> unlocked = const {},
   AchievementActions? achievementActions,
   List<DayStat> stats = const [],
-  AppSettings settings = const AppSettings(),
+  AppSettings settings = const AppSettings(onboardingCompleted: true),
   NotificationService? notifications,
   TaskActions? taskActions,
+  UserProfile profile = const UserProfile(),
+  ProfileActions? profileActions,
 }) {
   return ProviderScope(
     overrides: [
@@ -103,6 +112,13 @@ Widget testApp({
       ),
       notificationServiceProvider.overrideWithValue(
         notifications ?? FakeNotificationService(),
+      ),
+      profileProvider.overrideWith((ref) => Stream.value(profile)),
+      profileActionsProvider.overrideWithValue(
+        profileActions ?? FakeProfileActions(),
+      ),
+      safetyBackupsProvider.overrideWith(
+            (ref) async => const <SafetyBackupEntry>[],
       ),
     ],
     child: const AscendApp(),

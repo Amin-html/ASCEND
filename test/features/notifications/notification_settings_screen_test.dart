@@ -119,7 +119,9 @@ void main() {
 
     expect(service.testCalls, 1);
     expect(
-      find.text('Test notification scheduled. It should appear in a few seconds.'),
+      find.text(
+        'Test sent: one notification right now and another in about 5 seconds.',
+      ),
       findsOneWidget,
     );
   });

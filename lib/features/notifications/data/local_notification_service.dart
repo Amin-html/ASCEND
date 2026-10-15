@@ -140,15 +140,43 @@ class LocalNotificationService implements NotificationService {
   @override
   Future<bool> showTest() async {
     if (!await initialize()) return false;
-    return _schedule(
+
+    // Два уведомления: сразу и через пять секунд. Если приходит только
+    // первое, платформа не поддерживает отложенные уведомления.
+    final shownNow = await _showNow(
+      id: testNotificationId,
+      title: 'ASCEND',
+      body: 'Notifications work: this one was shown right now.',
+    );
+    final scheduled = await _schedule(
       PlannedNotification(
-        id: testNotificationId,
+        id: testNotificationId + 1,
         title: 'ASCEND',
-        body: 'Notifications are working.',
-        at: DateTime.now().add(const Duration(seconds: 3)),
+        body: 'Scheduled notifications work too.',
+        at: DateTime.now().add(const Duration(seconds: 5)),
         payload: planPayload,
       ),
     );
+    return shownNow || scheduled;
+  }
+
+  Future<bool> _showNow({
+    required int id,
+    required String title,
+    required String body,
+  }) async {
+    try {
+      await _plugin.show(
+        id: id,
+        title: title,
+        body: body,
+        notificationDetails: _details,
+        payload: planPayload,
+      );
+      return true;
+    } on Object {
+      return false;
+    }
   }
 
   Future<void> _cancelPending() async {
