@@ -200,7 +200,12 @@ class _HabitFormSheetState extends ConsumerState<HabitFormSheet> {
                 children: [
                   const Icon(Icons.bolt_rounded, color: AppColors.primaryLight),
                   const SizedBox(width: AppSpacing.sm),
-                  Text('Reward: +$reward XP per check-in', style: text.titleMedium),
+                  Expanded(
+                    child: Text(
+                      'Reward: +$reward XP per check-in',
+                      style: text.titleMedium,
+                    ),
+                  ),
                 ],
               ),
             ),

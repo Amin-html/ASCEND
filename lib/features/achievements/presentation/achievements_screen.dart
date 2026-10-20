@@ -8,6 +8,7 @@ import 'package:ascend/features/achievements/data/achievement_providers.dart';
 import 'package:ascend/features/achievements/domain/achievement_models.dart';
 import 'package:ascend/features/achievements/presentation/achievement_icons.dart';
 import 'package:ascend/shared/widgets/app_card.dart';
+import 'package:ascend/shared/widgets/split_row.dart';
 
 class AchievementsScreen extends ConsumerWidget {
   const AchievementsScreen({super.key});
@@ -44,15 +45,12 @@ class AchievementsScreen extends ConsumerWidget {
         AppSpacing.xxxl,
       ),
       children: [
-        Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            Text('Your progress', style: text.titleMedium),
-            Text(
-              '$done of ${entries.length} unlocked',
-              style: text.bodyMedium?.copyWith(color: AppColors.textSecondary),
-            ),
-          ],
+        SplitRow(
+          left: Text('Your progress', style: text.titleMedium),
+          right: Text(
+            '$done of ${entries.length} unlocked',
+            style: text.bodyMedium?.copyWith(color: AppColors.textSecondary),
+          ),
         ),
         const SizedBox(height: AppSpacing.sm),
         ClipRRect(

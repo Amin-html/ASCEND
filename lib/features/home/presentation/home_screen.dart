@@ -25,6 +25,7 @@ import 'package:ascend/shared/widgets/error_state.dart';
 import 'package:ascend/shared/widgets/progress_ring.dart';
 import 'package:ascend/shared/widgets/xp_bar.dart';
 import 'package:ascend/features/profile/data/profile_providers.dart';
+import 'package:ascend/shared/widgets/split_row.dart';
 
 const _maxTasksOnHome = 5;
 
@@ -116,15 +117,12 @@ class HomeScreen extends ConsumerWidget {
                 const SizedBox(height: AppSpacing.lg),
                 const HomeFocusCard(),
                 const SizedBox(height: AppSpacing.xxl),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Text("Today's tasks", style: text.titleLarge),
-                    TextButton(
-                      onPressed: () => context.go(AppRoutes.planner),
-                      child: const Text('See all'),
-                    ),
-                  ],
+                SplitRow(
+                  left: Text("Today's tasks", style: text.titleLarge),
+                  right: TextButton(
+                    onPressed: () => context.go(AppRoutes.planner),
+                    child: const Text('See all'),
+                  ),
                 ),
                 const SizedBox(height: AppSpacing.sm),
                 tasksAsync.when(
@@ -266,18 +264,15 @@ class _LevelCard extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              _RankChip(label: rankLabel),
-              Text(
-                '${progress.totalXp} XP total',
-                style: text.bodySmall?.copyWith(
-                  color: AppColors.textSecondary,
-                  fontFeatures: const [FontFeature.tabularFigures()],
-                ),
+          SplitRow(
+            left: _RankChip(label: rankLabel),
+            right: Text(
+              '${progress.totalXp} XP total',
+              style: text.bodySmall?.copyWith(
+                color: AppColors.textSecondary,
+                fontFeatures: const [FontFeature.tabularFigures()],
               ),
-            ],
+            ),
           ),
           const SizedBox(height: AppSpacing.md),
           XpBar(

@@ -13,6 +13,7 @@ import 'package:ascend/shared/widgets/bar_series_chart.dart';
 import 'package:ascend/shared/widgets/empty_state.dart';
 import 'package:ascend/shared/widgets/error_state.dart';
 import 'package:ascend/shared/widgets/stat_tile.dart';
+import 'package:ascend/shared/widgets/split_row.dart';
 
 class StatisticsScreen extends ConsumerStatefulWidget {
   const StatisticsScreen({super.key});
@@ -221,17 +222,14 @@ class _ChartCard extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Text(title, style: text.titleMedium),
-              Text(
-                total,
-                style: text.bodySmall?.copyWith(
-                  color: AppColors.textSecondary,
-                ),
+          SplitRow(
+            left: Text(title, style: text.titleMedium),
+            right: Text(
+              total,
+              style: text.bodySmall?.copyWith(
+                color: AppColors.textSecondary,
               ),
-            ],
+            ),
           ),
           const SizedBox(height: AppSpacing.lg),
           chart,

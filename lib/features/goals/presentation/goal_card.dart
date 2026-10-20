@@ -6,6 +6,7 @@ import 'package:ascend/features/goals/domain/goal_models.dart';
 import 'package:ascend/features/goals/presentation/goal_labels.dart';
 import 'package:ascend/features/tasks/domain/category.dart';
 import 'package:ascend/shared/widgets/app_card.dart';
+import 'package:ascend/shared/widgets/split_row.dart';
 
 class GoalCard extends StatelessWidget {
   const GoalCard({
@@ -91,24 +92,21 @@ class GoalCard extends StatelessWidget {
             ),
           ],
           const SizedBox(height: AppSpacing.md),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Text(
-                item.total == 0
-                    ? 'No milestones yet'
-                    : '${item.done} of ${item.total} milestones',
-                style: text.bodySmall?.copyWith(
-                  color: AppColors.textSecondary,
-                ),
+          SplitRow(
+            left: Text(
+              item.total == 0
+                  ? 'No milestones yet'
+                  : '${item.done} of ${item.total} milestones',
+              style: text.bodySmall?.copyWith(
+                color: AppColors.textSecondary,
               ),
-              Text(
-                '$percent%',
-                style: text.bodySmall?.copyWith(
-                  color: AppColors.textSecondary,
-                ),
+            ),
+            right: Text(
+              '$percent%',
+              style: text.bodySmall?.copyWith(
+                color: AppColors.textSecondary,
               ),
-            ],
+            ),
           ),
           const SizedBox(height: AppSpacing.sm),
           ClipRRect(
@@ -139,9 +137,14 @@ class _Meta extends StatelessWidget {
       children: [
         leading,
         const SizedBox(width: 4),
-        Text(
-          label,
-          style: Theme.of(context).textTheme.bodySmall?.copyWith(color: color),
+        Flexible(
+          child: Text(
+            label,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            style:
+            Theme.of(context).textTheme.bodySmall?.copyWith(color: color),
+          ),
         ),
       ],
     );

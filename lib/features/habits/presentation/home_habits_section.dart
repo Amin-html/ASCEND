@@ -11,6 +11,7 @@ import 'package:ascend/features/habits/data/habit_providers.dart';
 import 'package:ascend/features/habits/presentation/habit_card.dart';
 import 'package:ascend/features/habits/presentation/habit_interactions.dart';
 import 'package:ascend/shared/widgets/app_card.dart';
+import 'package:ascend/shared/widgets/split_row.dart';
 
 const _maxHabitsOnHome = 5;
 
@@ -27,15 +28,12 @@ class HomeHabitsSection extends ConsumerWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            Text('Habits', style: text.titleLarge),
-            TextButton(
-              onPressed: () => context.push(AppRoutes.habits),
-              child: const Text('Manage'),
-            ),
-          ],
+        SplitRow(
+          left: Text('Habits', style: text.titleLarge),
+          right: TextButton(
+            onPressed: () => context.push(AppRoutes.habits),
+            child: const Text('Manage'),
+          ),
         ),
         const SizedBox(height: AppSpacing.sm),
         async.when(

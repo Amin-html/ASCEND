@@ -174,7 +174,14 @@ class _Meta extends StatelessWidget {
       children: [
         leading,
         const SizedBox(width: 4),
-        Text(label, style: style),
+        Flexible(
+          child: Text(
+            label,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            style: style,
+          ),
+        ),
       ],
     );
   }

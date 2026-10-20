@@ -25,6 +25,7 @@ import 'package:ascend/features/tasks/domain/task_enums.dart';
 import 'package:ascend/shared/widgets/app_card.dart';
 import 'package:ascend/shared/widgets/confirm_dialog.dart';
 import 'package:ascend/shared/widgets/progress_ring.dart';
+import 'package:ascend/shared/widgets/split_row.dart';
 
 enum _ExitChoice { keep, save, discard }
 
@@ -371,17 +372,14 @@ class _FocusScreenState extends ConsumerState<FocusScreen> {
           style: text.bodySmall?.copyWith(color: AppColors.textMuted),
         ),
         const SizedBox(height: AppSpacing.xxl),
-        Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            Text('Today', style: text.titleMedium),
-            Text(
-              formatMinutes(todaySeconds ~/ 60),
-              style: text.bodyMedium?.copyWith(
-                color: AppColors.textSecondary,
-              ),
+        SplitRow(
+          left: Text('Today', style: text.titleMedium),
+          right: Text(
+            formatMinutes(todaySeconds ~/ 60),
+            style: text.bodyMedium?.copyWith(
+              color: AppColors.textSecondary,
             ),
-          ],
+          ),
         ),
         if (recent.isNotEmpty) ...[
           const SizedBox(height: AppSpacing.md),

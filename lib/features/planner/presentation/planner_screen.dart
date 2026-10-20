@@ -12,6 +12,7 @@ import 'package:ascend/features/tasks/presentation/task_card.dart';
 import 'package:ascend/features/tasks/presentation/task_interactions.dart';
 import 'package:ascend/shared/widgets/empty_state.dart';
 import 'package:ascend/shared/widgets/error_state.dart';
+import 'package:ascend/shared/widgets/split_row.dart';
 
 class PlannerScreen extends ConsumerStatefulWidget {
   const PlannerScreen({super.key});
@@ -212,15 +213,12 @@ class _Summary extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            Text('$done of $total completed', style: text.bodyMedium),
-            Text(
-              '${(fraction * 100).round()}%',
-              style: text.bodySmall?.copyWith(color: AppColors.textSecondary),
-            ),
-          ],
+        SplitRow(
+          left: Text('$done of $total completed', style: text.bodyMedium),
+          right: Text(
+            '${(fraction * 100).round()}%',
+            style: text.bodySmall?.copyWith(color: AppColors.textSecondary),
+          ),
         ),
         const SizedBox(height: AppSpacing.sm),
         ClipRRect(

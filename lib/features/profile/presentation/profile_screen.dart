@@ -17,6 +17,7 @@ import 'package:ascend/features/profile/presentation/profile_header.dart';
 import 'package:ascend/shared/widgets/app_card.dart';
 import 'package:ascend/shared/widgets/progress_ring.dart';
 import 'package:ascend/shared/widgets/stat_tile.dart';
+import 'package:ascend/shared/widgets/split_row.dart';
 
 class ProfileScreen extends ConsumerWidget {
   const ProfileScreen({super.key});
@@ -204,19 +205,24 @@ class _AchievementsPreview extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Row(
-            children: [
-              Expanded(child: Text('Achievements', style: text.titleMedium)),
-              Text(
-                '$done of $total',
-                style: text.bodySmall?.copyWith(color: AppColors.textSecondary),
-              ),
-              const SizedBox(width: AppSpacing.sm),
-              TextButton(
-                onPressed: () => context.push(AppRoutes.achievements),
-                child: const Text('See all'),
-              ),
-            ],
+          SplitRow(
+            left: Text('Achievements', style: text.titleMedium),
+            right: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text(
+                  '$done of $total',
+                  style: text.bodySmall?.copyWith(
+                    color: AppColors.textSecondary,
+                  ),
+                ),
+                const SizedBox(width: AppSpacing.sm),
+                TextButton(
+                  onPressed: () => context.push(AppRoutes.achievements),
+                  child: const Text('See all'),
+                ),
+              ],
+            ),
           ),
           const SizedBox(height: AppSpacing.sm),
           Wrap(

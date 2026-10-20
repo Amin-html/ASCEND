@@ -15,6 +15,7 @@ import 'package:ascend/features/tasks/domain/category.dart';
 import 'package:ascend/features/tasks/domain/task.dart';
 import 'package:ascend/features/tasks/domain/task_enums.dart';
 import 'package:ascend/features/tasks/presentation/task_labels.dart';
+import 'package:ascend/shared/widgets/segment_control.dart';
 
 /// Возвращает true, если задача была сохранена.
 Future<bool> showTaskFormSheet(
@@ -263,25 +264,10 @@ class _TaskFormSheetState extends ConsumerState<TaskFormSheet> {
               ],
             ),
             const _Label('Priority'),
-            SizedBox(
-              width: double.infinity,
-              child: SegmentedButton<TaskPriority>(
-                showSelectedIcon: false,
-                style: SegmentedButton.styleFrom(
-                  foregroundColor: AppColors.textSecondary,
-                  selectedForegroundColor: AppColors.textPrimary,
-                  selectedBackgroundColor:
-                  AppColors.primary.withValues(alpha: 0.25),
-                  side: const BorderSide(color: AppColors.border),
-                ),
-                segments: [
-                  for (final p in TaskPriority.values)
-                    ButtonSegment(value: p, label: Text(p.label)),
-                ],
-                selected: {_priority},
-                onSelectionChanged: (selection) =>
-                    setState(() => _priority = selection.first),
-              ),
+            SegmentControl<TaskPriority>(
+              segments: [for (final p in TaskPriority.values) (p, p.label)],
+              selected: _priority,
+              onChanged: (value) => setState(() => _priority = value),
             ),
             const _Label('Date'),
             Wrap(
@@ -403,7 +389,12 @@ class _TaskFormSheetState extends ConsumerState<TaskFormSheet> {
                 children: [
                   const Icon(Icons.bolt_rounded, color: AppColors.primaryLight),
                   const SizedBox(width: AppSpacing.sm),
-                  Text('Reward: +$reward XP', style: text.titleMedium),
+                  Expanded(
+                    child: Text(
+                      'Reward: +$reward XP',
+                      style: text.titleMedium,
+                    ),
+                  ),
                 ],
               ),
             ),

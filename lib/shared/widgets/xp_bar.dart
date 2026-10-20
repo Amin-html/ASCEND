@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import 'package:ascend/core/theme/app_colors.dart';
 import 'package:ascend/core/theme/app_dimens.dart';
+import 'package:ascend/shared/widgets/split_row.dart';
 
 class XpBar extends StatelessWidget {
   const XpBar({
@@ -26,18 +27,15 @@ class XpBar extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.start,
       mainAxisSize: MainAxisSize.min,
       children: [
-        Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            Text('Level $level', style: text.titleMedium),
-            Text(
-              '$currentXp / $nextLevelXp XP',
-              style: text.bodySmall?.copyWith(
-                color: AppColors.textSecondary,
-                fontFeatures: const [FontFeature.tabularFigures()],
-              ),
+        SplitRow(
+          left: Text('Level $level', style: text.titleMedium),
+          right: Text(
+            '$currentXp / $nextLevelXp XP',
+            style: text.bodySmall?.copyWith(
+              color: AppColors.textSecondary,
+              fontFeatures: const [FontFeature.tabularFigures()],
             ),
-          ],
+          ),
         ),
         const SizedBox(height: AppSpacing.sm),
         ClipRRect(

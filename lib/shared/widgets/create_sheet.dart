@@ -49,7 +49,7 @@ class _CreateSheet extends StatelessWidget {
     final text = Theme.of(context).textTheme;
 
     return SafeArea(
-      child: Padding(
+      child: SingleChildScrollView(
         padding: const EdgeInsets.fromLTRB(
           AppSpacing.lg,
           0,

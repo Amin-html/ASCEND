@@ -4,7 +4,6 @@ import 'package:go_router/go_router.dart';
 
 import 'package:ascend/core/router/app_routes.dart';
 import 'package:ascend/core/services/service_providers.dart';
-import 'package:ascend/core/theme/app_colors.dart';
 import 'package:ascend/core/theme/app_dimens.dart';
 import 'package:ascend/features/goals/data/goal_providers.dart';
 import 'package:ascend/features/goals/domain/goal_filter.dart';
@@ -14,6 +13,7 @@ import 'package:ascend/features/tasks/data/task_providers.dart';
 import 'package:ascend/features/tasks/domain/category.dart';
 import 'package:ascend/shared/widgets/empty_state.dart';
 import 'package:ascend/shared/widgets/error_state.dart';
+import 'package:ascend/shared/widgets/segment_control.dart';
 
 class GoalsScreen extends ConsumerStatefulWidget {
   const GoalsScreen({super.key});
@@ -82,35 +82,14 @@ class _GoalsScreenState extends ConsumerState<GoalsScreen> {
                   AppSpacing.lg,
                   AppSpacing.md,
                 ),
-                child: SizedBox(
-                  width: double.infinity,
-                  child: SegmentedButton<GoalFilter>(
-                    showSelectedIcon: false,
-                    style: SegmentedButton.styleFrom(
-                      foregroundColor: AppColors.textSecondary,
-                      selectedForegroundColor: AppColors.textPrimary,
-                      selectedBackgroundColor:
-                      AppColors.primary.withValues(alpha: 0.25),
-                      side: const BorderSide(color: AppColors.border),
-                    ),
-                    segments: const [
-                      ButtonSegment(
-                        value: GoalFilter.active,
-                        label: Text('Active'),
-                      ),
-                      ButtonSegment(
-                        value: GoalFilter.completed,
-                        label: Text('Completed'),
-                      ),
-                      ButtonSegment(
-                        value: GoalFilter.archived,
-                        label: Text('Archived'),
-                      ),
-                    ],
-                    selected: {_filter},
-                    onSelectionChanged: (selection) =>
-                        setState(() => _filter = selection.first),
-                  ),
+                child: SegmentControl<GoalFilter>(
+                  segments: const [
+                    (GoalFilter.active, 'Active'),
+                    (GoalFilter.completed, 'Completed'),
+                    (GoalFilter.archived, 'Archived'),
+                  ],
+                  selected: _filter,
+                  onChanged: (value) => setState(() => _filter = value),
                 ),
               ),
               Expanded(
