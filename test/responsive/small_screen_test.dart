@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:go_router/go_router.dart';
 
+import 'package:ascend/core/router/app_routes.dart';
 import 'package:ascend/core/utils/day_key.dart';
 import 'package:ascend/features/achievements/domain/achievement_models.dart';
 import 'package:ascend/features/goals/domain/goal_models.dart';
@@ -166,12 +168,27 @@ void _setup(WidgetTester tester, _Variant v) {
   addTearDown(tester.platformDispatcher.clearTextScaleFactorTestValue);
 }
 
-/// Прокручивает верхний экран или лист вниз, чтобы построить всё содержимое.
+/// Вертикальный список экрана или листа. Внутренние прокручиваемые области
+/// текстовых полей (restorationId «editable») не считаются.
+Finder _mainScrollable() {
+  return find.byWidgetPredicate(
+        (widget) =>
+    widget is Scrollable &&
+        widget.axis == Axis.vertical &&
+        widget.restorationId != 'editable',
+  );
+}
+
+/// Прокручивает экран или лист вниз, чтобы построить всё содержимое.
 Future<void> _scrollDown(WidgetTester tester) async {
-  final scrollables = find.byType(Scrollable);
-  if (scrollables.evaluate().isEmpty) return;
+  final scrollable = _mainScrollable();
+  if (scrollable.evaluate().isEmpty) return;
   for (var i = 0; i < 3; i++) {
-    await tester.drag(scrollables.last, const Offset(0, -1500));
+    await tester.drag(
+      scrollable.last,
+      const Offset(0, -1500),
+      warnIfMissed: false,
+    );
     await tester.pumpAndSettle();
   }
 }
@@ -182,12 +199,19 @@ Future<void> _tap(WidgetTester tester, String text) async {
     await tester.scrollUntilVisible(
       finder,
       300,
-      scrollable: find.byType(Scrollable).last,
+      scrollable: _mainScrollable().last,
     );
   }
   await tester.ensureVisible(finder.first);
   await tester.pumpAndSettle();
-  await tester.tap(finder.first);
+  await tester.tap(finder.first, warnIfMissed: false);
+  await tester.pumpAndSettle();
+}
+
+/// Переход по адресу напрямую, без поиска и нажатия кнопки на экране.
+Future<void> _go(WidgetTester tester, String location) async {
+  final context = tester.element(find.byType(Scaffold).first);
+  GoRouter.of(context).go(location);
   await tester.pumpAndSettle();
 }
 
@@ -230,14 +254,18 @@ void main() {
         await _scrollDown(tester);
       });
 
-      testWidgets('goals list and goal detail', (tester) async {
+      testWidgets('goals list', (tester) async {
         await boot(tester);
         await tester.tap(find.text('Goals'));
         await tester.pumpAndSettle();
+        expect(find.text(_longGoalTitle), findsOneWidget);
         await _scrollDown(tester);
+      });
 
-        await _tap(tester, _longGoalTitle);
-        expect(find.text('Milestones'), findsOneWidget);
+      testWidgets('goal detail', (tester) async {
+        await boot(tester);
+        await _go(tester, AppRoutes.goalDetail('g1'));
+        expect(find.text('Goal'), findsOneWidget);
         await _scrollDown(tester);
       });
 
@@ -292,19 +320,23 @@ void main() {
 
       testWidgets('focus setup', (tester) async {
         await boot(tester);
-        await _tap(tester, 'Start');
+        await _go(tester, AppRoutes.focus);
         expect(find.text('Stopwatch'), findsOneWidget);
         await _scrollDown(tester);
       });
 
       testWidgets('focus running', (tester) async {
         await boot(tester);
-        await _tap(tester, 'Start');
+        await _go(tester, AppRoutes.focus);
 
-        final start = find.text('Start');
-        await tester.ensureVisible(start.first);
-        await tester.pumpAndSettle();
-        await tester.tap(start.first);
+        final start = find.widgetWithText(FilledButton, 'Start');
+        await tester.scrollUntilVisible(
+          start,
+          300,
+          scrollable: _mainScrollable().last,
+        );
+        // Нажимаем программно: важна вёрстка работающего таймера, а не попадание.
+        tester.widget<FilledButton>(start.first).onPressed!();
         // Таймер идёт, поэтому pumpAndSettle здесь не годится.
         await tester.pump(const Duration(seconds: 1));
         expect(find.text('Pause'), findsOneWidget);

@@ -207,8 +207,9 @@ class _AchievementsPreview extends StatelessWidget {
         children: [
           SplitRow(
             left: Text('Achievements', style: text.titleMedium),
-            right: Row(
-              mainAxisSize: MainAxisSize.min,
+            right: Wrap(
+              crossAxisAlignment: WrapCrossAlignment.center,
+              spacing: AppSpacing.sm,
               children: [
                 Text(
                   '$done of $total',
@@ -216,7 +217,6 @@ class _AchievementsPreview extends StatelessWidget {
                     color: AppColors.textSecondary,
                   ),
                 ),
-                const SizedBox(width: AppSpacing.sm),
                 TextButton(
                   onPressed: () => context.push(AppRoutes.achievements),
                   child: const Text('See all'),
