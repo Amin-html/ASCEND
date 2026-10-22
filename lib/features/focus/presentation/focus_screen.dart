@@ -303,9 +303,17 @@ class _FocusScreenState extends ConsumerState<FocusScreen> {
             value: 0,
             size: 220,
             strokeWidth: 12,
-            child: Text(
-              formatClock(preview),
-              style: AppTypography.numeric.copyWith(fontSize: 48),
+            child: Padding(
+              padding: const EdgeInsets.all(32),
+              child: FittedBox(
+                fit: BoxFit.scaleDown,
+                child: Text(
+                  formatClock(preview),
+                  maxLines: 1,
+                  softWrap: false,
+                  style: AppTypography.numeric.copyWith(fontSize: 48),
+                ),
+              ),
             ),
           ),
         ),
@@ -420,23 +428,33 @@ class _FocusScreenState extends ConsumerState<FocusScreen> {
             value: fraction.clamp(0.0, 1.0).toDouble(),
             size: 260,
             strokeWidth: 14,
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Text(
-                  formatClock(shown),
-                  style: AppTypography.numeric.copyWith(fontSize: 52),
+            child: Padding(
+              padding: const EdgeInsets.all(36),
+              child: FittedBox(
+                fit: BoxFit.scaleDown,
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Text(
+                      formatClock(shown),
+                      maxLines: 1,
+                      softWrap: false,
+                      style: AppTypography.numeric.copyWith(fontSize: 52),
+                    ),
+                    const SizedBox(height: AppSpacing.xs),
+                    Text(
+                      running ? 'Stay focused' : 'Paused',
+                      maxLines: 1,
+                      softWrap: false,
+                      style: text.bodyMedium?.copyWith(
+                        color: running
+                            ? AppColors.textSecondary
+                            : AppColors.warning,
+                      ),
+                    ),
+                  ],
                 ),
-                const SizedBox(height: AppSpacing.xs),
-                Text(
-                  running ? 'Stay focused' : 'Paused',
-                  style: text.bodyMedium?.copyWith(
-                    color: running
-                        ? AppColors.textSecondary
-                        : AppColors.warning,
-                  ),
-                ),
-              ],
+              ),
             ),
           ),
           if (taskTitle != null) ...[
