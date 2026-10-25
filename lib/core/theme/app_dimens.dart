@@ -1,3 +1,5 @@
+import 'package:flutter/animation.dart';
+
 abstract final class AppSpacing {
   static const double xs = 4;
   static const double sm = 8;
@@ -10,8 +12,16 @@ abstract final class AppSpacing {
 }
 
 abstract final class AppRadius {
-  static const double control = 14;
-  static const double card = 18;
+  static const double control = 12;
+  static const double card = 16;
   static const double sheet = 24;
   static const double pill = 999;
+}
+
+/// Единые длительности и кривая анимаций (ненавязчивые, до 250 мс).
+abstract final class AppMotion {
+  static const Duration fast = Duration(milliseconds: 150);
+  static const Duration normal = Duration(milliseconds: 250);
+  static const Duration slow = Duration(milliseconds: 500);
+  static const Curve curve = Curves.easeOutCubic;
 }

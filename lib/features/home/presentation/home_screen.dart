@@ -20,9 +20,12 @@ import 'package:ascend/features/tasks/domain/task_enums.dart';
 import 'package:ascend/features/tasks/presentation/task_card.dart';
 import 'package:ascend/features/tasks/presentation/task_interactions.dart';
 import 'package:ascend/shared/widgets/app_card.dart';
+import 'package:ascend/shared/widgets/count_up_text.dart';
 import 'package:ascend/shared/widgets/empty_state.dart';
 import 'package:ascend/shared/widgets/error_state.dart';
+import 'package:ascend/shared/widgets/fade_slide_in.dart';
 import 'package:ascend/shared/widgets/progress_ring.dart';
+import 'package:ascend/shared/widgets/stat_tile.dart';
 import 'package:ascend/shared/widgets/xp_bar.dart';
 import 'package:ascend/features/profile/data/profile_providers.dart';
 import 'package:ascend/shared/widgets/split_row.dart';
@@ -38,6 +41,9 @@ String _greeting(int hour) {
 
 class HomeScreen extends ConsumerWidget {
   const HomeScreen({super.key});
+
+  /// Ширина контента, с которой Home переходит на две колонки.
+  static const double _twoColumnWidth = 860;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -55,129 +61,286 @@ class HomeScreen extends ConsumerWidget {
     final text = Theme.of(context).textTheme;
     final name = ref.watch(profileProvider).value?.name ?? '';
 
+    final greeting = name.isEmpty
+        ? _greeting(now.hour)
+        : '${_greeting(now.hour)}, $name';
+
+    // Блоки появляются каскадом: чем больше номер, тем позже.
+    Widget stagger(int index, Widget child) => FadeSlideIn(
+      delay: Duration(milliseconds: 70 * index),
+      child: child,
+    );
+
+    final todayCard = stagger(1, _TodayCard(tasks: tasks));
+    final levelCard = stagger(
+      2,
+      _LevelCard(progress: progress, rankLabel: rank.label),
+    );
+    final statsRow = IntrinsicHeight(
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          Expanded(
+            child: StatTile(
+              icon: Icons.local_fire_department_rounded,
+              iconColor: AppColors.warning,
+              value: '${streak.current}',
+              countTo: streak.current,
+              label: 'Day streak',
+              caption: 'Best: ${streak.best}',
+            ),
+          ),
+          const SizedBox(width: AppSpacing.lg),
+          Expanded(
+            child: StatTile(
+              icon: Icons.bolt_rounded,
+              iconColor: AppColors.primaryLight,
+              value: '+$xpToday',
+              countTo: xpToday,
+              prefix: '+',
+              label: 'XP today',
+            ),
+          ),
+        ],
+      ),
+    );
+    final stats = stagger(3, statsRow);
+    final focusCard = stagger(4, const HomeFocusCard());
+    final habitsSection = stagger(6, const HomeHabitsSection());
+
+    final tasksColumn = Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        SplitRow(
+          left: Text("Today's tasks", style: text.titleLarge),
+          right: TextButton(
+            onPressed: () => context.go(AppRoutes.planner),
+            child: const Text('See all'),
+          ),
+        ),
+        const SizedBox(height: AppSpacing.sm),
+        tasksAsync.when(
+          loading: () => const Padding(
+            padding: EdgeInsets.all(AppSpacing.xxl),
+            child: Center(child: CircularProgressIndicator()),
+          ),
+          error: (error, stack) => ErrorState(
+            message: 'Could not load tasks.',
+            onRetry: () => ref.invalidate(tasksByDayProvider(todayKey)),
+          ),
+          data: (list) {
+            if (list.isEmpty) {
+              return EmptyState(
+                icon: Icons.checklist_rounded,
+                title: 'No tasks for today',
+                message: 'Plan your day to start earning XP.',
+                actionLabel: 'Add task',
+                onAction: () => openTaskForm(
+                  context,
+                  initialDayKey: todayKey,
+                ),
+              );
+            }
+            return Column(
+              children: [
+                for (final task in list.take(_maxTasksOnHome))
+                  Padding(
+                    padding: const EdgeInsets.only(bottom: AppSpacing.md),
+                    child: TaskCard(
+                      key: ValueKey(task.id),
+                      task: task,
+                      category: categoryById[task.categoryId],
+                      onToggle: () => toggleTask(context, ref, task),
+                      onEdit: () => openTaskForm(
+                        context,
+                        task: task,
+                        initialDayKey: todayKey,
+                      ),
+                      onDelete: () => confirmDeleteTask(context, ref, task),
+                    ),
+                  ),
+              ],
+            );
+          },
+        ),
+      ],
+    );
+
+    final tasksSection = stagger(5, tasksColumn);
+
     return Scaffold(
       body: SafeArea(
         child: Align(
           alignment: Alignment.topCenter,
           child: ConstrainedBox(
-            constraints: const BoxConstraints(maxWidth: 720),
+            constraints: const BoxConstraints(maxWidth: 1040),
             child: ListView(
               padding: const EdgeInsets.fromLTRB(
                 AppSpacing.lg,
-                AppSpacing.xl,
+                AppSpacing.lg,
                 AppSpacing.lg,
                 96,
               ),
               children: [
-                Text(
-                  name.isEmpty
-                      ? _greeting(now.hour)
-                      : '${_greeting(now.hour)}, $name',
-                  maxLines: 2,
-                  overflow: TextOverflow.ellipsis,
-                  style: text.headlineMedium,
+                FadeSlideIn(
+                  child: _HomeHero(greeting: greeting, date: longDate(now)),
                 ),
-                const SizedBox(height: AppSpacing.xs),
-                Text(
-                  longDate(now),
-                  style: text.bodyMedium?.copyWith(
-                    color: AppColors.textSecondary,
-                  ),
-                ),
-                const SizedBox(height: AppSpacing.xxl),
-                _TodayCard(tasks: tasks),
-                const SizedBox(height: AppSpacing.lg),
-                _LevelCard(progress: progress, rankLabel: rank.label),
-                const SizedBox(height: AppSpacing.lg),
-                IntrinsicHeight(
-                  child: Row(
-                    crossAxisAlignment: CrossAxisAlignment.stretch,
-                    children: [
-                      Expanded(
-                        child: _StatTile(
-                          icon: Icons.local_fire_department_rounded,
-                          iconColor: AppColors.warning,
-                          value: '${streak.current}',
-                          label: 'Day streak',
-                          caption: 'Best: ${streak.best}',
-                        ),
-                      ),
-                      const SizedBox(width: AppSpacing.lg),
-                      Expanded(
-                        child: _StatTile(
-                          icon: Icons.bolt_rounded,
-                          iconColor: AppColors.primaryLight,
-                          value: '+$xpToday',
-                          label: 'XP today',
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-                const SizedBox(height: AppSpacing.lg),
-                const HomeFocusCard(),
-                const SizedBox(height: AppSpacing.xxl),
-                SplitRow(
-                  left: Text("Today's tasks", style: text.titleLarge),
-                  right: TextButton(
-                    onPressed: () => context.go(AppRoutes.planner),
-                    child: const Text('See all'),
-                  ),
-                ),
-                const SizedBox(height: AppSpacing.sm),
-                tasksAsync.when(
-                  loading: () => const Padding(
-                    padding: EdgeInsets.all(AppSpacing.xxl),
-                    child: Center(child: CircularProgressIndicator()),
-                  ),
-                  error: (error, stack) => ErrorState(
-                    message: 'Could not load tasks.',
-                    onRetry: () => ref.invalidate(tasksByDayProvider(todayKey)),
-                  ),
-                  data: (list) {
-                    if (list.isEmpty) {
-                      return EmptyState(
-                        icon: Icons.checklist_rounded,
-                        title: 'No tasks for today',
-                        message: 'Plan your day to start earning XP.',
-                        actionLabel: 'Add task',
-                        onAction: () => openTaskForm(
-                          context,
-                          initialDayKey: todayKey,
-                        ),
+                const SizedBox(height: AppSpacing.xl),
+                LayoutBuilder(
+                  builder: (context, constraints) {
+                    if (constraints.maxWidth >= _twoColumnWidth) {
+                      return Row(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Expanded(
+                            flex: 3,
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                todayCard,
+                                const SizedBox(height: AppSpacing.xxl),
+                                tasksSection,
+                              ],
+                            ),
+                          ),
+                          const SizedBox(width: AppSpacing.xxl),
+                          Expanded(
+                            flex: 2,
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                levelCard,
+                                const SizedBox(height: AppSpacing.lg),
+                                stats,
+                                const SizedBox(height: AppSpacing.lg),
+                                focusCard,
+                                const SizedBox(height: AppSpacing.xxl),
+                                habitsSection,
+                              ],
+                            ),
+                          ),
+                        ],
                       );
                     }
                     return Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        for (final task in list.take(_maxTasksOnHome))
-                          Padding(
-                            padding: const EdgeInsets.only(
-                              bottom: AppSpacing.md,
-                            ),
-                            child: TaskCard(
-                              key: ValueKey(task.id),
-                              task: task,
-                              category: categoryById[task.categoryId],
-                              onToggle: () => toggleTask(context, ref, task),
-                              onEdit: () => openTaskForm(
-                                context,
-                                task: task,
-                                initialDayKey: todayKey,
-                              ),
-                              onDelete: () =>
-                                  confirmDeleteTask(context, ref, task),
-                            ),
-                          ),
+                        todayCard,
+                        const SizedBox(height: AppSpacing.lg),
+                        levelCard,
+                        const SizedBox(height: AppSpacing.lg),
+                        stats,
+                        const SizedBox(height: AppSpacing.lg),
+                        focusCard,
+                        const SizedBox(height: AppSpacing.xxl),
+                        tasksSection,
+                        const SizedBox(height: AppSpacing.xxl),
+                        habitsSection,
                       ],
                     );
                   },
                 ),
-                const SizedBox(height: AppSpacing.xxl),
-                const HomeHabitsSection(),
               ],
             ),
           ),
         ),
+      ),
+    );
+  }
+}
+
+/// Фирменный блок: фото гор под тёмным градиентом, приветствие и дата.
+/// Высота растёт вместе с текстом, поэтому крупный шрифт ничего не ломает.
+class _HomeHero extends StatelessWidget {
+  const _HomeHero({required this.greeting, required this.date});
+
+  final String greeting;
+  final String date;
+
+  @override
+  Widget build(BuildContext context) {
+    final text = Theme.of(context).textTheme;
+    final radius = BorderRadius.circular(AppRadius.card);
+
+    return Container(
+      clipBehavior: Clip.antiAlias,
+      decoration: BoxDecoration(
+        color: AppColors.surfaceElevated,
+        borderRadius: radius,
+      ),
+      foregroundDecoration: BoxDecoration(
+        borderRadius: radius,
+        border: Border.all(color: AppColors.border),
+      ),
+      child: Stack(
+        children: [
+          Positioned.fill(
+            child: TweenAnimationBuilder<double>(
+              tween: Tween<double>(begin: 1.1, end: 1),
+              duration: MediaQuery.disableAnimationsOf(context)
+                  ? Duration.zero
+                  : const Duration(milliseconds: 1600),
+              curve: AppMotion.curve,
+              builder: (context, scale, child) =>
+                  Transform.scale(scale: scale, child: child),
+              child: Image.asset(
+                'assets/images/ascend_mountains.png',
+                fit: BoxFit.cover,
+                alignment: const Alignment(0, -0.35),
+                cacheWidth: 1280,
+                errorBuilder: (context, error, stack) =>
+                    const ColoredBox(color: AppColors.surfaceElevated),
+              ),
+            ),
+          ),
+          Positioned.fill(
+            child: DecoratedBox(
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  begin: Alignment.topCenter,
+                  end: Alignment.bottomCenter,
+                  colors: [
+                    AppColors.background.withValues(alpha: 0.04),
+                    AppColors.background.withValues(alpha: 0.28),
+                    AppColors.background.withValues(alpha: 0.82),
+                  ],
+                  stops: const [0, 0.45, 1],
+                ),
+              ),
+            ),
+          ),
+          Container(
+            constraints: const BoxConstraints(minHeight: 196),
+            padding: const EdgeInsets.all(AppSpacing.xl),
+            alignment: Alignment.bottomLeft,
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  greeting,
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
+                  style: text.headlineMedium?.copyWith(
+                    shadows: const [
+                      Shadow(color: Color(0x99000000), blurRadius: 12),
+                    ],
+                  ),
+                ),
+                const SizedBox(height: AppSpacing.xs),
+                Text(
+                  date,
+                  style: text.bodyMedium?.copyWith(
+                    color: AppColors.textPrimary.withValues(alpha: 0.85),
+                    shadows: const [
+                      Shadow(color: Color(0x99000000), blurRadius: 10),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
       ),
     );
   }
@@ -216,8 +379,9 @@ class _TodayCard extends StatelessWidget {
             value: fraction,
             size: 96,
             strokeWidth: 9,
-            child: Text(
-              '${(fraction * 100).round()}%',
+            child: CountUpText(
+              value: (fraction * 100).round(),
+              suffix: '%',
               style: AppTypography.numeric.copyWith(fontSize: 22),
             ),
           ),
@@ -315,49 +479,6 @@ class _RankChip extends StatelessWidget {
                 .labelLarge
                 ?.copyWith(color: AppColors.primaryLight),
           ),
-        ],
-      ),
-    );
-  }
-}
-
-class _StatTile extends StatelessWidget {
-  const _StatTile({
-    required this.icon,
-    required this.iconColor,
-    required this.value,
-    required this.label,
-    this.caption,
-  });
-
-  final IconData icon;
-  final Color iconColor;
-  final String value;
-  final String label;
-  final String? caption;
-
-  @override
-  Widget build(BuildContext context) {
-    final text = Theme.of(context).textTheme;
-    final cap = caption;
-
-    return AppCard(
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Icon(icon, color: iconColor, size: 22),
-          const SizedBox(height: AppSpacing.md),
-          Text(value, style: AppTypography.numeric.copyWith(fontSize: 26)),
-          const SizedBox(height: 2),
-          Text(
-            label,
-            style: text.bodySmall?.copyWith(color: AppColors.textSecondary),
-          ),
-          if (cap != null)
-            Text(
-              cap,
-              style: text.labelSmall?.copyWith(color: AppColors.textMuted),
-            ),
         ],
       ),
     );

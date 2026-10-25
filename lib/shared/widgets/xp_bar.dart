@@ -41,17 +41,17 @@ class XpBar extends StatelessWidget {
         ClipRRect(
           borderRadius: BorderRadius.circular(AppRadius.pill),
           child: SizedBox(
-            height: 8,
+            height: 6,
             child: Stack(
               children: [
                 const Positioned.fill(
-                  child: ColoredBox(color: AppColors.surfaceHighest),
+                  child: ColoredBox(color: AppColors.border),
                 ),
                 Positioned.fill(
                   child: TweenAnimationBuilder<double>(
                     tween: Tween<double>(begin: 0, end: progress),
-                    duration: const Duration(milliseconds: 300),
-                    curve: Curves.easeOut,
+                    duration: AppMotion.slow,
+                    curve: AppMotion.curve,
                     builder: (context, value, _) {
                       return FractionallySizedBox(
                         alignment: Alignment.centerLeft,
@@ -59,7 +59,7 @@ class XpBar extends StatelessWidget {
                         heightFactor: 1,
                         child: const DecoratedBox(
                           decoration: BoxDecoration(
-                            gradient: AppColors.primaryGradient,
+                            gradient: AppColors.sunsetGradient,
                           ),
                         ),
                       );

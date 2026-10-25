@@ -3,6 +3,7 @@ import 'dart:math' as math;
 import 'package:flutter/material.dart';
 
 import 'package:ascend/core/theme/app_colors.dart';
+import 'package:ascend/core/theme/app_dimens.dart';
 
 class ProgressRing extends StatelessWidget {
   const ProgressRing({
@@ -23,8 +24,8 @@ class ProgressRing extends StatelessWidget {
   Widget build(BuildContext context) {
     return TweenAnimationBuilder<double>(
       tween: Tween<double>(begin: 0, end: value.clamp(0.0, 1.0).toDouble()),
-      duration: const Duration(milliseconds: 300),
-      curve: Curves.easeOut,
+      duration: AppMotion.slow,
+      curve: AppMotion.curve,
       builder: (context, animated, inner) {
         return SizedBox.square(
           dimension: size,
@@ -52,20 +53,28 @@ class _RingPainter extends CustomPainter {
     final track = Paint()
       ..style = PaintingStyle.stroke
       ..strokeWidth = strokeWidth
-      ..color = AppColors.surfaceHighest;
+      ..color = AppColors.border;
     canvas.drawArc(rect, 0, math.pi * 2, false, track);
 
     if (progress <= 0) return;
 
+    // Градиент растягивается на дугу: при любом прогрессе виден весь переход
+    // от фиолетового к оранжевому.
+    final sweep = math.pi * 2 * progress;
     final fill = Paint()
       ..style = PaintingStyle.stroke
       ..strokeWidth = strokeWidth
       ..strokeCap = StrokeCap.round
-      ..shader = const SweepGradient(
-        colors: [AppColors.primary, AppColors.accent],
-        transform: GradientRotation(-math.pi / 2),
+      ..shader = SweepGradient(
+        endAngle: math.max(sweep, 0.01),
+        colors: const [
+          AppColors.primary,
+          AppColors.sunsetPink,
+          AppColors.sunsetOrange,
+        ],
+        transform: const GradientRotation(-math.pi / 2),
       ).createShader(rect);
-    canvas.drawArc(rect, -math.pi / 2, math.pi * 2 * progress, false, fill);
+    canvas.drawArc(rect, -math.pi / 2, sweep, false, fill);
   }
 
   @override

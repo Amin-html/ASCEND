@@ -86,7 +86,10 @@ class AppShell extends StatelessWidget {
 
   Widget _buildCompact(BuildContext context) {
     return Scaffold(
-      body: navigationShell,
+      body: _TabFade(
+        index: navigationShell.currentIndex,
+        child: navigationShell,
+      ),
       floatingActionButton: FloatingActionButton(
         onPressed: () => _onCreate(context),
         tooltip: 'Create',
@@ -117,11 +120,15 @@ class AppShell extends StatelessWidget {
       body: Row(
         children: [
           NavigationRail(
+            extended: true,
+            minExtendedWidth: 232,
             backgroundColor: AppColors.surface,
             selectedIndex: navigationShell.currentIndex,
             onDestinationSelected: _onSelected,
-            labelType: NavigationRailLabelType.all,
-            indicatorColor: AppColors.primary.withValues(alpha: 0.18),
+            indicatorColor: AppColors.primary.withValues(alpha: 0.14),
+            indicatorShape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(AppRadius.control),
+            ),
             selectedIconTheme: const IconThemeData(
               color: AppColors.primaryLight,
             ),
@@ -130,36 +137,148 @@ class AppShell extends StatelessWidget {
             ),
             selectedLabelTextStyle: const TextStyle(
               fontFamily: AppTypography.fontFamily,
-              fontSize: 11,
+              fontSize: 14,
               fontWeight: FontWeight.w600,
               color: AppColors.textPrimary,
             ),
             unselectedLabelTextStyle: const TextStyle(
               fontFamily: AppTypography.fontFamily,
-              fontSize: 11,
-              fontWeight: FontWeight.w600,
-              color: AppColors.textMuted,
+              fontSize: 14,
+              fontWeight: FontWeight.w500,
+              color: AppColors.textSecondary,
             ),
-            leading: Padding(
-              padding: const EdgeInsets.symmetric(vertical: AppSpacing.lg),
-              child: FloatingActionButton(
-                onPressed: () => _onCreate(context),
-                tooltip: 'Create',
-                child: const Icon(Icons.add_rounded),
-              ),
-            ),
+            leading: _RailHeader(onCreate: () => _onCreate(context)),
             destinations: [
               for (final item in _items)
                 NavigationRailDestination(
                   icon: Icon(item.icon),
                   selectedIcon: Icon(item.selectedIcon),
                   label: Text(item.label),
+                  padding: const EdgeInsets.symmetric(vertical: 2),
                 ),
             ],
           ),
           const VerticalDivider(width: 1),
-          Expanded(child: navigationShell),
+          Expanded(
+            child: _TabFade(
+              index: navigationShell.currentIndex,
+              child: navigationShell,
+            ),
+          ),
         ],
+      ),
+    );
+  }
+}
+
+/// Шапка боковой панели: название приложения и кнопка создания.
+class _RailHeader extends StatelessWidget {
+  const _RailHeader({required this.onCreate});
+
+  final VoidCallback onCreate;
+
+  @override
+  Widget build(BuildContext context) {
+    return SizedBox(
+      width: 208,
+      child: Padding(
+        padding: const EdgeInsets.fromLTRB(
+          AppSpacing.sm,
+          AppSpacing.xl,
+          AppSpacing.sm,
+          AppSpacing.xl,
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                const Icon(
+                  Icons.landscape_rounded,
+                  size: 24,
+                  color: AppColors.primaryLight,
+                ),
+                const SizedBox(width: AppSpacing.md),
+                Expanded(
+                  child: Text(
+                    'ASCEND',
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                      letterSpacing: 3,
+                      fontWeight: FontWeight.w700,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: AppSpacing.xl),
+            SizedBox(
+              width: double.infinity,
+              child: FloatingActionButton.extended(
+                onPressed: onCreate,
+                tooltip: 'Create',
+                icon: const Icon(Icons.add_rounded),
+                label: const Text('Create'),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+/// Короткое появление содержимого при переключении вкладок.
+class _TabFade extends StatefulWidget {
+  const _TabFade({required this.index, required this.child});
+
+  final int index;
+  final Widget child;
+
+  @override
+  State<_TabFade> createState() => _TabFadeState();
+}
+
+class _TabFadeState extends State<_TabFade>
+    with SingleTickerProviderStateMixin {
+  late final AnimationController _controller = AnimationController(
+    vsync: this,
+    duration: AppMotion.normal,
+    value: 1,
+  );
+
+  late final Animation<double> _progress = CurvedAnimation(
+    parent: _controller,
+    curve: AppMotion.curve,
+  );
+
+  @override
+  void didUpdateWidget(_TabFade oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.index != widget.index &&
+        !MediaQuery.disableAnimationsOf(context)) {
+      _controller.forward(from: 0);
+    }
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return FadeTransition(
+      opacity: _progress,
+      child: AnimatedBuilder(
+        animation: _progress,
+        child: widget.child,
+        builder: (context, child) => Transform.translate(
+          offset: Offset(0, (1 - _progress.value) * 10),
+          child: child,
+        ),
       ),
     );
   }

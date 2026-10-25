@@ -54,102 +54,119 @@ class _WelcomeScreenState extends ConsumerState<WelcomeScreen> {
     final text = Theme.of(context).textTheme;
 
     return Scaffold(
-      body: SafeArea(
-        child: Center(
-          child: ConstrainedBox(
-            constraints: const BoxConstraints(maxWidth: 440),
-            child: SingleChildScrollView(
-              padding: const EdgeInsets.all(AppSpacing.xxl),
-              child: Column(
-                children: [
-                  Container(
-                    width: 84,
-                    height: 84,
-                    decoration: BoxDecoration(
-                      shape: BoxShape.circle,
-                      gradient: AppColors.primaryGradient,
-                      boxShadow: [
-                        BoxShadow(
-                          color: AppColors.primary.withValues(alpha: 0.4),
-                          blurRadius: 28,
-                          spreadRadius: -4,
-                        ),
-                      ],
-                    ),
-                    child: const Icon(
-                      Icons.bolt_rounded,
-                      size: 44,
-                      color: Colors.white,
-                    ),
-                  ),
-                  const SizedBox(height: AppSpacing.xl),
-                  Text(
-                    'ASCEND',
-                    style: text.displayLarge?.copyWith(letterSpacing: 2),
-                  ),
-                  const SizedBox(height: AppSpacing.sm),
-                  Text(
-                    'Plan. Focus. Complete. Ascend.',
-                    style: text.bodyMedium?.copyWith(
-                      color: AppColors.textSecondary,
-                    ),
-                  ),
-                  const SizedBox(height: AppSpacing.xxxl),
-                  const _Feature(
-                    icon: Icons.checklist_rounded,
-                    title: 'Plan your day',
-                    subtitle: 'Tasks, goals and habits in one place.',
-                  ),
-                  const _Feature(
-                    icon: Icons.timer_rounded,
-                    title: 'Stay focused',
-                    subtitle: 'A timer and stopwatch tied to your tasks.',
-                  ),
-                  const _Feature(
-                    icon: Icons.bolt_rounded,
-                    title: 'Level up',
-                    subtitle: 'Earn XP, keep streaks, unlock achievements.',
-                  ),
-                  const SizedBox(height: AppSpacing.xxl),
-                  TextField(
-                    controller: _name,
-                    textCapitalization: TextCapitalization.words,
-                    textInputAction: TextInputAction.done,
-                    inputFormatters: [
-                      LengthLimitingTextInputFormatter(maxNameLength),
-                    ],
-                    decoration: const InputDecoration(
-                      labelText: 'Your name (optional)',
-                    ),
-                    onSubmitted: (_) => _start(),
-                  ),
-                  const SizedBox(height: AppSpacing.lg),
-                  SizedBox(
-                    width: double.infinity,
-                    child: FilledButton(
-                      onPressed: _busy ? null : _start,
-                      child: const Text('Get started'),
-                    ),
-                  ),
-                  const SizedBox(height: AppSpacing.sm),
-                  TextButton(
-                    onPressed: _busy
-                        ? null
-                        : () => context.push(AppRoutes.backup),
-                    child: const Text('Restore from a backup'),
-                  ),
-                  const SizedBox(height: AppSpacing.md),
-                  Text(
-                    'Everything stays on this device.',
-                    style: text.bodySmall?.copyWith(
-                      color: AppColors.textMuted,
-                    ),
-                  ),
+      body: Stack(
+        fit: StackFit.expand,
+        children: [
+          Image.asset(
+            'assets/images/ascend_mountains.png',
+            fit: BoxFit.cover,
+            alignment: Alignment.topCenter,
+            cacheWidth: 1280,
+            errorBuilder: (context, error, stack) =>
+                const ColoredBox(color: AppColors.background),
+          ),
+          DecoratedBox(
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                begin: Alignment.topCenter,
+                end: Alignment.bottomCenter,
+                stops: const [0, 0.4, 0.75],
+                colors: [
+                  AppColors.background.withValues(alpha: 0.2),
+                  AppColors.background.withValues(alpha: 0.82),
+                  AppColors.background.withValues(alpha: 0.97),
                 ],
               ),
             ),
           ),
-        ),
+          SafeArea(
+            child: Center(
+              child: ConstrainedBox(
+                constraints: const BoxConstraints(maxWidth: 440),
+                child: SingleChildScrollView(
+                  padding: const EdgeInsets.all(AppSpacing.xxl),
+                  child: Column(
+                    children: [
+                      const Icon(
+                        Icons.landscape_rounded,
+                        size: 40,
+                        color: AppColors.primaryLight,
+                      ),
+                      const SizedBox(height: AppSpacing.lg),
+                      FittedBox(
+                        fit: BoxFit.scaleDown,
+                        child: Text(
+                          'ASCEND',
+                          maxLines: 1,
+                          style: text.displayLarge?.copyWith(letterSpacing: 6),
+                        ),
+                      ),
+                      const SizedBox(height: AppSpacing.sm),
+                      Text(
+                        'Plan. Focus. Complete. Ascend.',
+                        textAlign: TextAlign.center,
+                        style: text.bodyMedium?.copyWith(
+                          color: AppColors.textSecondary,
+                        ),
+                      ),
+                      const SizedBox(height: AppSpacing.xxxl),
+                      const _Feature(
+                        icon: Icons.checklist_rounded,
+                        title: 'Plan your day',
+                        subtitle: 'Tasks, goals and habits in one place.',
+                      ),
+                      const _Feature(
+                        icon: Icons.timer_rounded,
+                        title: 'Stay focused',
+                        subtitle: 'A timer and stopwatch tied to your tasks.',
+                      ),
+                      const _Feature(
+                        icon: Icons.bolt_rounded,
+                        title: 'Level up',
+                        subtitle: 'Earn XP, keep streaks, unlock achievements.',
+                      ),
+                      const SizedBox(height: AppSpacing.xxl),
+                      TextField(
+                        controller: _name,
+                        textCapitalization: TextCapitalization.words,
+                        textInputAction: TextInputAction.done,
+                        inputFormatters: [
+                          LengthLimitingTextInputFormatter(maxNameLength),
+                        ],
+                        decoration: const InputDecoration(
+                          labelText: 'Your name (optional)',
+                        ),
+                        onSubmitted: (_) => _start(),
+                      ),
+                      const SizedBox(height: AppSpacing.lg),
+                      SizedBox(
+                        width: double.infinity,
+                        child: FilledButton(
+                          onPressed: _busy ? null : _start,
+                          child: const Text('Get started'),
+                        ),
+                      ),
+                      const SizedBox(height: AppSpacing.sm),
+                      TextButton(
+                        onPressed: _busy
+                            ? null
+                            : () => context.push(AppRoutes.backup),
+                        child: const Text('Restore from a backup'),
+                      ),
+                      const SizedBox(height: AppSpacing.md),
+                      Text(
+                        'Everything stays on this device.',
+                        style: text.bodySmall?.copyWith(
+                          color: AppColors.textMuted,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }
@@ -202,4 +219,4 @@ class _Feature extends StatelessWidget {
       ),
     );
   }
-}
+}

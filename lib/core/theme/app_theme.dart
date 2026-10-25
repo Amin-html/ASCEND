@@ -28,6 +28,10 @@ abstract final class AppTheme {
     final controlShape = RoundedRectangleBorder(
       borderRadius: BorderRadius.circular(AppRadius.control),
     );
+    final borderedControlShape = RoundedRectangleBorder(
+      borderRadius: BorderRadius.circular(AppRadius.control),
+      side: const BorderSide(color: AppColors.border),
+    );
     final cardShape = RoundedRectangleBorder(
       borderRadius: BorderRadius.circular(AppRadius.card),
       side: const BorderSide(color: AppColors.border),
@@ -48,6 +52,9 @@ abstract final class AppTheme {
       canvasColor: AppColors.background,
       fontFamily: AppTypography.fontFamily,
       textTheme: textTheme,
+      splashColor: AppColors.primary.withValues(alpha: 0.08),
+      highlightColor: Colors.white.withValues(alpha: 0.03),
+      hoverColor: Colors.white.withValues(alpha: 0.03),
       iconTheme: const IconThemeData(color: AppColors.textSecondary),
       dividerTheme: const DividerThemeData(
         color: AppColors.border,
@@ -71,7 +78,7 @@ abstract final class AppTheme {
       ),
       inputDecorationTheme: InputDecorationTheme(
         filled: true,
-        fillColor: AppColors.surfaceElevated,
+        fillColor: AppColors.surfaceHighest,
         contentPadding: const EdgeInsets.symmetric(
           horizontal: AppSpacing.lg,
           vertical: 14,
@@ -79,7 +86,7 @@ abstract final class AppTheme {
         hintStyle: const TextStyle(color: AppColors.textMuted),
         border: inputBorder(AppColors.border),
         enabledBorder: inputBorder(AppColors.border),
-        focusedBorder: inputBorder(AppColors.primaryLight, 1.5),
+        focusedBorder: inputBorder(AppColors.primary, 1.5),
         errorBorder: inputBorder(AppColors.danger),
         focusedErrorBorder: inputBorder(AppColors.danger, 1.5),
       ),
@@ -124,7 +131,7 @@ abstract final class AppTheme {
         surfaceTintColor: Colors.transparent,
         elevation: 0,
         height: 68,
-        indicatorColor: AppColors.primary.withValues(alpha: 0.18),
+        indicatorColor: AppColors.primary.withValues(alpha: 0.16),
         labelTextStyle: WidgetStateProperty.resolveWith((states) {
           final selected = states.contains(WidgetState.selected);
           return TextStyle(
@@ -146,7 +153,7 @@ abstract final class AppTheme {
         backgroundColor: AppColors.surfaceElevated,
         surfaceTintColor: Colors.transparent,
         showDragHandle: true,
-        dragHandleColor: Color(0x3DFFFFFF),
+        dragHandleColor: AppColors.borderStrong,
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.vertical(
             top: Radius.circular(AppRadius.sheet),
@@ -160,21 +167,46 @@ abstract final class AppTheme {
       ),
       chipTheme: ChipThemeData(
         backgroundColor: AppColors.surfaceHighest,
-        selectedColor: AppColors.primary.withValues(alpha: 0.25),
+        selectedColor: AppColors.primary.withValues(alpha: 0.22),
         side: const BorderSide(color: AppColors.border),
         shape: const StadiumBorder(),
         labelStyle: textTheme.labelLarge,
+      ),
+      switchTheme: SwitchThemeData(
+        thumbColor: WidgetStateProperty.resolveWith((states) {
+          return states.contains(WidgetState.selected)
+              ? Colors.white
+              : AppColors.textSecondary;
+        }),
+        trackColor: WidgetStateProperty.resolveWith((states) {
+          return states.contains(WidgetState.selected)
+              ? AppColors.primary
+              : AppColors.surfaceHighest;
+        }),
+        trackOutlineColor: WidgetStateProperty.resolveWith((states) {
+          return states.contains(WidgetState.selected)
+              ? Colors.transparent
+              : AppColors.borderStrong;
+        }),
+      ),
+      tooltipTheme: TooltipThemeData(
+        decoration: BoxDecoration(
+          color: AppColors.surfaceHighest,
+          borderRadius: BorderRadius.circular(AppRadius.control),
+          border: Border.all(color: AppColors.border),
+        ),
+        textStyle: textTheme.bodySmall,
       ),
       snackBarTheme: SnackBarThemeData(
         backgroundColor: AppColors.surfaceHighest,
         contentTextStyle: textTheme.bodyMedium,
         behavior: SnackBarBehavior.floating,
-        shape: controlShape,
+        shape: borderedControlShape,
       ),
       progressIndicatorTheme: const ProgressIndicatorThemeData(
         color: AppColors.primaryLight,
-        linearTrackColor: AppColors.surfaceHighest,
-        circularTrackColor: AppColors.surfaceHighest,
+        linearTrackColor: AppColors.border,
+        circularTrackColor: AppColors.border,
       ),
     );
   }

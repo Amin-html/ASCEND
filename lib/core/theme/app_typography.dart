@@ -8,8 +8,9 @@ abstract final class AppTypography {
   /// Для крупных чисел: прогресс, XP, уровень, таймер.
   static const TextStyle numeric = TextStyle(
     fontSize: 32,
-    fontWeight: FontWeight.w700,
+    fontWeight: FontWeight.w600,
     height: 1.1,
+    letterSpacing: -0.5,
     color: AppColors.textPrimary,
     fontFeatures: [FontFeature.tabularFigures()],
   );
@@ -17,25 +18,28 @@ abstract final class AppTypography {
   static TextTheme textTheme() {
     const base = TextTheme(
       displayLarge: TextStyle(
-        fontSize: 40,
+        fontSize: 36,
         fontWeight: FontWeight.w700,
         height: 1.1,
-        letterSpacing: -0.5,
+        letterSpacing: -0.8,
       ),
       headlineMedium: TextStyle(
         fontSize: 24,
-        fontWeight: FontWeight.w700,
+        fontWeight: FontWeight.w600,
         height: 1.2,
+        letterSpacing: -0.3,
       ),
       titleLarge: TextStyle(
         fontSize: 20,
         fontWeight: FontWeight.w600,
         height: 1.25,
+        letterSpacing: -0.2,
       ),
       titleMedium: TextStyle(
         fontSize: 16,
         fontWeight: FontWeight.w600,
         height: 1.3,
+        letterSpacing: -0.1,
       ),
       bodyLarge: TextStyle(fontSize: 16, fontWeight: FontWeight.w400, height: 1.4),
       bodyMedium: TextStyle(fontSize: 14, fontWeight: FontWeight.w400, height: 1.4),

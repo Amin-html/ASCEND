@@ -20,12 +20,16 @@ class SegmentControl<T> extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final style = Theme.of(context).textTheme.labelLarge;
-    final radius = BorderRadius.circular(AppRadius.pill);
+    const idle = StadiumBorder();
+    const active = StadiumBorder(
+      side: BorderSide(color: AppColors.borderStrong),
+    );
 
     return Container(
       padding: const EdgeInsets.all(3),
       decoration: BoxDecoration(
-        borderRadius: radius,
+        color: AppColors.surface,
+        borderRadius: BorderRadius.circular(AppRadius.pill),
         border: Border.all(color: AppColors.border),
       ),
       child: Row(
@@ -37,11 +41,12 @@ class SegmentControl<T> extends StatelessWidget {
                 selected: value == selected,
                 child: Material(
                   color: value == selected
-                      ? AppColors.primary.withValues(alpha: 0.25)
+                      ? AppColors.surfaceHighest
                       : Colors.transparent,
-                  borderRadius: radius,
+                  shape: value == selected ? active : idle,
+                  animationDuration: AppMotion.fast,
                   child: InkWell(
-                    borderRadius: radius,
+                    customBorder: idle,
                     onTap: () => onChanged(value),
                     child: Padding(
                       padding: const EdgeInsets.symmetric(
