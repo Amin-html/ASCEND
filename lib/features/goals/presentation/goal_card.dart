@@ -6,7 +6,7 @@ import 'package:ascend/features/goals/domain/goal_models.dart';
 import 'package:ascend/features/goals/presentation/goal_labels.dart';
 import 'package:ascend/features/tasks/domain/category.dart';
 import 'package:ascend/shared/widgets/app_card.dart';
-import 'package:ascend/shared/widgets/split_row.dart';
+import 'package:ascend/shared/widgets/progress_ring.dart';
 
 class GoalCard extends StatelessWidget {
   const GoalCard({
@@ -34,84 +34,95 @@ class GoalCard extends StatelessWidget {
 
     return AppCard(
       onTap: onTap,
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.center,
         children: [
-          Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Expanded(
+          ProgressRing(
+            value: item.progress,
+            size: 60,
+            strokeWidth: 6,
+            child: Padding(
+              padding: const EdgeInsets.all(10),
+              child: FittedBox(
+                fit: BoxFit.scaleDown,
                 child: Text(
-                  goal.title,
-                  maxLines: 2,
-                  overflow: TextOverflow.ellipsis,
-                  style: text.titleMedium,
+                  '$percent%',
+                  maxLines: 1,
+                  style: text.labelLarge,
                 ),
               ),
-              if (goal.status == GoalStatus.completed)
-                const Padding(
-                  padding: EdgeInsets.only(left: AppSpacing.sm),
-                  child: Icon(
-                    Icons.check_circle_rounded,
-                    size: 20,
-                    color: AppColors.success,
-                  ),
-                ),
-            ],
+            ),
           ),
-          if (cat != null || showDeadline) ...[
-            const SizedBox(height: 6),
-            Wrap(
-              spacing: AppSpacing.md,
-              runSpacing: 4,
+          const SizedBox(width: AppSpacing.lg),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                if (cat != null)
-                  _Meta(
-                    leading: Container(
-                      width: 8,
-                      height: 8,
-                      decoration: BoxDecoration(
-                        color: Color(cat.colorValue),
-                        shape: BoxShape.circle,
+                Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Expanded(
+                      child: Text(
+                        goal.title,
+                        maxLines: 2,
+                        overflow: TextOverflow.ellipsis,
+                        style: text.titleMedium,
                       ),
                     ),
-                    label: cat.name,
+                    if (goal.status == GoalStatus.completed)
+                      const Padding(
+                        padding: EdgeInsets.only(left: AppSpacing.sm),
+                        child: Icon(
+                          Icons.check_circle_rounded,
+                          size: 20,
+                          color: AppColors.success,
+                        ),
+                      ),
+                  ],
+                ),
+                if (cat != null || showDeadline) ...[
+                  const SizedBox(height: 6),
+                  Wrap(
+                    spacing: AppSpacing.md,
+                    runSpacing: 4,
+                    children: [
+                      if (cat != null)
+                        _Meta(
+                          leading: Container(
+                            width: 8,
+                            height: 8,
+                            decoration: BoxDecoration(
+                              color: Color(cat.colorValue),
+                              shape: BoxShape.circle,
+                            ),
+                          ),
+                          label: cat.name,
+                          color: AppColors.textSecondary,
+                        ),
+                      if (showDeadline)
+                        _Meta(
+                          leading: Icon(
+                            Icons.event_rounded,
+                            size: 13,
+                            color: deadlineColor(info.tone),
+                          ),
+                          label: info.label,
+                          color: deadlineColor(info.tone),
+                        ),
+                    ],
+                  ),
+                ],
+                const SizedBox(height: 6),
+                Text(
+                  item.total == 0
+                      ? 'No milestones yet'
+                      : '${item.done} of ${item.total} milestones',
+                  style: text.bodySmall?.copyWith(
                     color: AppColors.textSecondary,
                   ),
-                if (showDeadline)
-                  _Meta(
-                    leading: Icon(
-                      Icons.event_rounded,
-                      size: 13,
-                      color: deadlineColor(info.tone),
-                    ),
-                    label: info.label,
-                    color: deadlineColor(info.tone),
-                  ),
+                ),
               ],
             ),
-          ],
-          const SizedBox(height: AppSpacing.md),
-          SplitRow(
-            left: Text(
-              item.total == 0
-                  ? 'No milestones yet'
-                  : '${item.done} of ${item.total} milestones',
-              style: text.bodySmall?.copyWith(
-                color: AppColors.textSecondary,
-              ),
-            ),
-            right: Text(
-              '$percent%',
-              style: text.bodySmall?.copyWith(
-                color: AppColors.textSecondary,
-              ),
-            ),
-          ),
-          const SizedBox(height: AppSpacing.sm),
-          ClipRRect(
-            borderRadius: BorderRadius.circular(AppRadius.pill),
-            child: LinearProgressIndicator(value: item.progress, minHeight: 6),
           ),
         ],
       ),
@@ -143,7 +154,7 @@ class _Meta extends StatelessWidget {
             maxLines: 1,
             overflow: TextOverflow.ellipsis,
             style:
-            Theme.of(context).textTheme.bodySmall?.copyWith(color: color),
+                Theme.of(context).textTheme.bodySmall?.copyWith(color: color),
           ),
         ),
       ],

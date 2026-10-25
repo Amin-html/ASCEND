@@ -15,6 +15,8 @@ import 'package:ascend/features/achievements/presentation/achievement_icons.dart
 import 'package:ascend/features/gamification/data/gamification_providers.dart';
 import 'package:ascend/features/profile/presentation/profile_header.dart';
 import 'package:ascend/shared/widgets/app_card.dart';
+import 'package:ascend/shared/widgets/fade_slide_in.dart';
+import 'package:ascend/shared/widgets/page_header.dart';
 import 'package:ascend/shared/widgets/progress_ring.dart';
 import 'package:ascend/shared/widgets/stat_tile.dart';
 import 'package:ascend/shared/widgets/split_row.dart';
@@ -34,153 +36,238 @@ class ProfileScreen extends ConsumerWidget {
     final unlocked = ref.watch(unlockedAchievementsProvider).value ??
         const <String, DateTime>{};
 
-    return Scaffold(
-      appBar: AppBar(title: const Text('Profile')),
-      body: Align(
-        alignment: Alignment.topCenter,
-        child: ConstrainedBox(
-          constraints: const BoxConstraints(maxWidth: 720),
-          child: ListView(
-            padding: const EdgeInsets.fromLTRB(
-              AppSpacing.lg,
-              AppSpacing.xs,
-              AppSpacing.lg,
-              AppSpacing.xxxl,
+    Widget stagger(int index, Widget child) => FadeSlideIn(
+      delay: Duration(milliseconds: 70 * index),
+      child: child,
+    );
+
+    final header = stagger(0, const ProfileHeader());
+
+    final levelCard = stagger(
+      1,
+      AppCard(
+        glow: true,
+        child: Row(
+          children: [
+            ProgressRing(
+              value: progress.fraction,
+              size: 112,
+              strokeWidth: 10,
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text(
+                    'LEVEL',
+                    style: text.labelSmall?.copyWith(
+                      color: AppColors.textMuted,
+                    ),
+                  ),
+                  Text(
+                    '${progress.level}',
+                    style: AppTypography.numeric.copyWith(fontSize: 34),
+                  ),
+                ],
+              ),
             ),
-            children: [
-              const ProfileHeader(),
-              const SizedBox(height: AppSpacing.lg),
-              AppCard(
-                glow: true,
-                child: Row(
-                  children: [
-                    ProgressRing(
-                      value: progress.fraction,
-                      size: 112,
-                      strokeWidth: 10,
-                      child: Column(
-                        mainAxisSize: MainAxisSize.min,
+            const SizedBox(width: AppSpacing.xl),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(rank.label, style: text.titleLarge),
+                  const SizedBox(height: AppSpacing.xs),
+                  Text(
+                    '${progress.xpIntoLevel} / '
+                    '${progress.xpForNextLevel} XP to next level',
+                    style: text.bodyMedium?.copyWith(
+                      color: AppColors.textSecondary,
+                    ),
+                  ),
+                  const SizedBox(height: AppSpacing.xs),
+                  Text(
+                    nextRank == null
+                        ? 'Highest rank reached'
+                        : 'Next rank: ${nextRank.label} '
+                              'at level ${nextRank.minLevel}',
+                    style: text.bodySmall?.copyWith(
+                      color: AppColors.primaryLight,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+
+    final tiles = stagger(
+      2,
+      Column(
+        children: [
+          IntrinsicHeight(
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                Expanded(
+                  child: StatTile(
+                    icon: Icons.local_fire_department_rounded,
+                    iconColor: AppColors.warning,
+                    value: '${streak.current}',
+                    countTo: streak.current,
+                    label: 'Day streak',
+                    caption: 'Best: ${streak.best}',
+                  ),
+                ),
+                const SizedBox(width: AppSpacing.lg),
+                Expanded(
+                  child: StatTile(
+                    icon: Icons.check_circle_rounded,
+                    iconColor: AppColors.success,
+                    value: metrics == null ? '–' : '${metrics.completedTasks}',
+                    countTo: metrics?.completedTasks,
+                    label: 'Tasks done',
+                  ),
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(height: AppSpacing.lg),
+          IntrinsicHeight(
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                Expanded(
+                  child: StatTile(
+                    icon: Icons.timer_rounded,
+                    iconColor: AppColors.primaryLight,
+                    value: metrics == null
+                        ? '–'
+                        : formatDurationShort(metrics.focusSeconds),
+                    label: 'Focus time',
+                  ),
+                ),
+                const SizedBox(width: AppSpacing.lg),
+                Expanded(
+                  child: StatTile(
+                    icon: Icons.bolt_rounded,
+                    iconColor: AppColors.accent,
+                    value: '${progress.totalXp}',
+                    countTo: progress.totalXp,
+                    label: 'Total XP',
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+
+    final achievements = stagger(3, _AchievementsPreview(unlocked: unlocked));
+
+    final menu = Column(
+      children: [
+        stagger(
+          4,
+          _MenuTile(
+            icon: Icons.repeat_rounded,
+            title: 'Habits',
+            subtitle: 'Build streaks day by day',
+            onTap: () => context.push(AppRoutes.habits),
+          ),
+        ),
+        const SizedBox(height: AppSpacing.md),
+        stagger(
+          5,
+          _MenuTile(
+            icon: Icons.notifications_rounded,
+            title: 'Notifications',
+            subtitle: 'Reminders and daily plan alerts',
+            onTap: () => context.push(AppRoutes.notifications),
+          ),
+        ),
+        const SizedBox(height: AppSpacing.md),
+        stagger(
+          6,
+          _MenuTile(
+            icon: Icons.backup_rounded,
+            title: 'Data & Backup',
+            subtitle: 'Export and restore your data',
+            onTap: () => context.push(AppRoutes.backup),
+          ),
+        ),
+      ],
+    );
+
+    return Scaffold(
+      body: SafeArea(
+        bottom: false,
+        child: Align(
+          alignment: Alignment.topCenter,
+          child: ConstrainedBox(
+            constraints: const BoxConstraints(maxWidth: 1040),
+            child: ListView(
+              padding: const EdgeInsets.fromLTRB(
+                0,
+                0,
+                0,
+                AppSpacing.xxxl,
+              ),
+              children: [
+                const PageHeader(title: 'Profile'),
+                Padding(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: AppSpacing.lg,
+                  ),
+                  child: LayoutBuilder(
+                    builder: (context, constraints) {
+                      if (constraints.maxWidth >= 860) {
+                        return Row(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Expanded(
+                              child: Column(
+                                children: [
+                                  header,
+                                  const SizedBox(height: AppSpacing.lg),
+                                  levelCard,
+                                  const SizedBox(height: AppSpacing.lg),
+                                  tiles,
+                                ],
+                              ),
+                            ),
+                            const SizedBox(width: AppSpacing.xxl),
+                            Expanded(
+                              child: Column(
+                                children: [
+                                  achievements,
+                                  const SizedBox(height: AppSpacing.lg),
+                                  menu,
+                                ],
+                              ),
+                            ),
+                          ],
+                        );
+                      }
+                      return Column(
                         children: [
-                          Text(
-                            'LEVEL',
-                            style: text.labelSmall?.copyWith(
-                              color: AppColors.textMuted,
-                            ),
-                          ),
-                          Text(
-                            '${progress.level}',
-                            style: AppTypography.numeric.copyWith(fontSize: 34),
-                          ),
+                          header,
+                          const SizedBox(height: AppSpacing.lg),
+                          levelCard,
+                          const SizedBox(height: AppSpacing.lg),
+                          tiles,
+                          const SizedBox(height: AppSpacing.xxl),
+                          achievements,
+                          const SizedBox(height: AppSpacing.xxl),
+                          menu,
                         ],
-                      ),
-                    ),
-                    const SizedBox(width: AppSpacing.xl),
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(rank.label, style: text.titleLarge),
-                          const SizedBox(height: AppSpacing.xs),
-                          Text(
-                            '${progress.xpIntoLevel} / '
-                                '${progress.xpForNextLevel} XP to next level',
-                            style: text.bodyMedium?.copyWith(
-                              color: AppColors.textSecondary,
-                            ),
-                          ),
-                          const SizedBox(height: AppSpacing.xs),
-                          Text(
-                            nextRank == null
-                                ? 'Highest rank reached'
-                                : 'Next rank: ${nextRank.label} '
-                                'at level ${nextRank.minLevel}',
-                            style: text.bodySmall?.copyWith(
-                              color: AppColors.primaryLight,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ],
+                      );
+                    },
+                  ),
                 ),
-              ),
-              const SizedBox(height: AppSpacing.lg),
-              IntrinsicHeight(
-                child: Row(
-                  crossAxisAlignment: CrossAxisAlignment.stretch,
-                  children: [
-                    Expanded(
-                      child: StatTile(
-                        icon: Icons.local_fire_department_rounded,
-                        iconColor: AppColors.warning,
-                        value: '${streak.current}',
-                        label: 'Day streak',
-                        caption: 'Best: ${streak.best}',
-                      ),
-                    ),
-                    const SizedBox(width: AppSpacing.lg),
-                    Expanded(
-                      child: StatTile(
-                        icon: Icons.check_circle_rounded,
-                        iconColor: AppColors.success,
-                        value: metrics == null ? '–' : '${metrics.completedTasks}',
-                        label: 'Tasks done',
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              const SizedBox(height: AppSpacing.lg),
-              IntrinsicHeight(
-                child: Row(
-                  crossAxisAlignment: CrossAxisAlignment.stretch,
-                  children: [
-                    Expanded(
-                      child: StatTile(
-                        icon: Icons.timer_rounded,
-                        iconColor: AppColors.primaryLight,
-                        value: metrics == null
-                            ? '–'
-                            : formatDurationShort(metrics.focusSeconds),
-                        label: 'Focus time',
-                      ),
-                    ),
-                    const SizedBox(width: AppSpacing.lg),
-                    Expanded(
-                      child: StatTile(
-                        icon: Icons.bolt_rounded,
-                        iconColor: AppColors.accent,
-                        value: '${progress.totalXp}',
-                        label: 'Total XP',
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              const SizedBox(height: AppSpacing.xxl),
-              _AchievementsPreview(unlocked: unlocked),
-              const SizedBox(height: AppSpacing.xxl),
-              _MenuTile(
-                icon: Icons.repeat_rounded,
-                title: 'Habits',
-                subtitle: 'Build streaks day by day',
-                onTap: () => context.push(AppRoutes.habits),
-              ),
-              const SizedBox(height: AppSpacing.md),
-              _MenuTile(
-                icon: Icons.notifications_rounded,
-                title: 'Notifications',
-                subtitle: 'Reminders and daily plan alerts',
-                onTap: () => context.push(AppRoutes.notifications),
-              ),
-              const SizedBox(height: AppSpacing.md),
-              _MenuTile(
-                icon: Icons.backup_rounded,
-                title: 'Data & Backup',
-                subtitle: 'Export and restore your data',
-                onTap: () => context.push(AppRoutes.backup),
-              ),
-            ],
+              ],
+            ),
           ),
         ),
       ),
@@ -237,15 +324,25 @@ class _AchievementsPreview extends StatelessWidget {
                     height: 44,
                     decoration: BoxDecoration(
                       shape: BoxShape.circle,
+                      gradient: unlocked.containsKey(d.code)
+                          ? const LinearGradient(
+                              begin: Alignment.topLeft,
+                              end: Alignment.bottomRight,
+                              colors: [
+                                AppColors.primary,
+                                AppColors.sunsetPink,
+                              ],
+                            )
+                          : null,
                       color: unlocked.containsKey(d.code)
-                          ? AppColors.primary.withValues(alpha: 0.2)
+                          ? null
                           : AppColors.surfaceHighest,
                     ),
                     child: Icon(
                       achievementIcon(d.code),
                       size: 22,
                       color: unlocked.containsKey(d.code)
-                          ? AppColors.primaryLight
+                          ? Colors.white
                           : AppColors.textMuted,
                     ),
                   ),
@@ -308,4 +405,4 @@ class _MenuTile extends StatelessWidget {
       ),
     );
   }
-}
+}

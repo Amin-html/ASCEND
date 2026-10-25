@@ -8,6 +8,9 @@ import 'package:ascend/features/achievements/data/achievement_providers.dart';
 import 'package:ascend/features/achievements/domain/achievement_models.dart';
 import 'package:ascend/features/achievements/presentation/achievement_icons.dart';
 import 'package:ascend/shared/widgets/app_card.dart';
+import 'package:ascend/shared/widgets/fade_slide_in.dart';
+import 'package:ascend/shared/widgets/gradient_progress_bar.dart';
+import 'package:ascend/shared/widgets/progress_ring.dart';
 import 'package:ascend/shared/widgets/split_row.dart';
 
 class AchievementsScreen extends ConsumerWidget {
@@ -25,17 +28,21 @@ class AchievementsScreen extends ConsumerWidget {
       body: metrics == null
           ? const Center(child: CircularProgressIndicator())
           : Align(
-        alignment: Alignment.topCenter,
-        child: ConstrainedBox(
-          constraints: const BoxConstraints(maxWidth: 720),
-          child: _buildList(text, buildAchievementEntries(metrics, unlocked)),
-        ),
-      ),
+              alignment: Alignment.topCenter,
+              child: ConstrainedBox(
+                constraints: const BoxConstraints(maxWidth: 720),
+                child: _buildList(
+                  text,
+                  buildAchievementEntries(metrics, unlocked),
+                ),
+              ),
+            ),
     );
   }
 
   Widget _buildList(TextTheme text, List<AchievementEntry> entries) {
     final done = entries.where((e) => e.isUnlocked).length;
+    final fraction = entries.isEmpty ? 0.0 : done / entries.length;
 
     return ListView(
       padding: const EdgeInsets.fromLTRB(
@@ -45,26 +52,52 @@ class AchievementsScreen extends ConsumerWidget {
         AppSpacing.xxxl,
       ),
       children: [
-        SplitRow(
-          left: Text('Your progress', style: text.titleMedium),
-          right: Text(
-            '$done of ${entries.length} unlocked',
-            style: text.bodyMedium?.copyWith(color: AppColors.textSecondary),
-          ),
-        ),
-        const SizedBox(height: AppSpacing.sm),
-        ClipRRect(
-          borderRadius: BorderRadius.circular(AppRadius.pill),
-          child: LinearProgressIndicator(
-            value: entries.isEmpty ? 0 : done / entries.length,
-            minHeight: 6,
+        FadeSlideIn(
+          child: AppCard(
+            glow: entries.isNotEmpty && done == entries.length,
+            child: Row(
+              children: [
+                ProgressRing(
+                  value: fraction,
+                  size: 72,
+                  strokeWidth: 7,
+                  child: Padding(
+                    padding: const EdgeInsets.all(10),
+                    child: FittedBox(
+                      fit: BoxFit.scaleDown,
+                      child: Text(
+                        '$done/${entries.length}',
+                        maxLines: 1,
+                        style: text.labelLarge,
+                      ),
+                    ),
+                  ),
+                ),
+                const SizedBox(width: AppSpacing.lg),
+                Expanded(
+                  child: SplitRow(
+                    left: Text('Your progress', style: text.titleMedium),
+                    right: Text(
+                      '$done of ${entries.length} unlocked',
+                      style: text.bodyMedium?.copyWith(
+                        color: AppColors.textSecondary,
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            ),
           ),
         ),
         const SizedBox(height: AppSpacing.xl),
-        for (final entry in entries)
+        for (var i = 0; i < entries.length; i++)
           Padding(
             padding: const EdgeInsets.only(bottom: AppSpacing.md),
-            child: _AchievementTile(entry: entry),
+            child: FadeSlideIn(
+              key: ValueKey(entries[i].def.code),
+              delay: Duration(milliseconds: 60 * (i + 1)),
+              child: _AchievementTile(entry: entries[i]),
+            ),
           ),
       ],
     );
@@ -92,13 +125,18 @@ class _AchievementTile extends StatelessWidget {
             height: 48,
             decoration: BoxDecoration(
               shape: BoxShape.circle,
-              color: unlocked
-                  ? AppColors.primary.withValues(alpha: 0.2)
-                  : AppColors.surfaceHighest,
+              gradient: unlocked
+                  ? const LinearGradient(
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
+                      colors: [AppColors.primary, AppColors.sunsetPink],
+                    )
+                  : null,
+              color: unlocked ? null : AppColors.surfaceHighest,
             ),
             child: Icon(
               achievementIcon(def.code),
-              color: unlocked ? AppColors.primaryLight : AppColors.textMuted,
+              color: unlocked ? Colors.white : AppColors.textMuted,
             ),
           ),
           const SizedBox(width: AppSpacing.lg),
@@ -128,13 +166,7 @@ class _AchievementTile extends StatelessWidget {
                     style: text.labelSmall?.copyWith(color: AppColors.success),
                   )
                 else ...[
-                  ClipRRect(
-                    borderRadius: BorderRadius.circular(AppRadius.pill),
-                    child: LinearProgressIndicator(
-                      value: entry.fraction,
-                      minHeight: 5,
-                    ),
-                  ),
+                  GradientProgressBar(value: entry.fraction, height: 5),
                   const SizedBox(height: 4),
                   Text(
                     def.progressLabel(entry.current),

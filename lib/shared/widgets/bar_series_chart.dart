@@ -3,9 +3,11 @@ import 'dart:math' as math;
 import 'package:flutter/material.dart';
 
 import 'package:ascend/core/theme/app_colors.dart';
+import 'package:ascend/core/theme/app_dimens.dart';
 
-/// Простой столбчатый график. Последний столбец (сегодня) выделен.
-/// Списки [values], [labels] и [tooltips] должны быть одной длины.
+/// Столбчатый график. Столбцы плавно вырастают, последний (сегодня)
+/// окрашен в цвета заката. Списки [values], [labels] и [tooltips]
+/// должны быть одной длины.
 class BarSeriesChart extends StatelessWidget {
   const BarSeriesChart({
     required this.values,
@@ -42,35 +44,55 @@ class BarSeriesChart extends StatelessWidget {
 
     bool showLabel(int i) => i % step == 0 || i == n - 1;
 
+    final regular = LinearGradient(
+      begin: Alignment.bottomCenter,
+      end: Alignment.topCenter,
+      colors: [
+        AppColors.primary.withValues(alpha: 0.3),
+        AppColors.primary.withValues(alpha: 0.85),
+      ],
+    );
+    const highlight = LinearGradient(
+      begin: Alignment.bottomCenter,
+      end: Alignment.topCenter,
+      colors: [AppColors.primary, AppColors.sunsetPink, AppColors.sunsetOrange],
+    );
+
     return Column(
       mainAxisSize: MainAxisSize.min,
       children: [
         SizedBox(
           height: height,
-          child: Row(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              for (var i = 0; i < n; i++)
-                Expanded(
-                  child: Tooltip(
-                    message: tooltips[i],
-                    child: Padding(
-                      padding: EdgeInsets.symmetric(horizontal: gap),
-                      child: Align(
-                        alignment: Alignment.bottomCenter,
-                        child: FractionallySizedBox(
-                          widthFactor: 1,
-                          heightFactor: _factor(values[i], maxValue),
-                          child: DecoratedBox(
-                            decoration: BoxDecoration(
-                              color: values[i] <= 0
-                                  ? AppColors.surfaceHighest
-                                  : (i == n - 1
-                                  ? AppColors.primaryLight
-                                  : AppColors.primary
-                                  .withValues(alpha: 0.6)),
-                              borderRadius: const BorderRadius.vertical(
-                                top: Radius.circular(4),
+          child: TweenAnimationBuilder<double>(
+            key: ValueKey(Object.hashAll(values)),
+            tween: Tween<double>(begin: 0, end: 1),
+            duration: MediaQuery.disableAnimationsOf(context)
+                ? Duration.zero
+                : const Duration(milliseconds: 700),
+            curve: AppMotion.curve,
+            builder: (context, t, _) => Row(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                for (var i = 0; i < n; i++)
+                  Expanded(
+                    child: Tooltip(
+                      message: tooltips[i],
+                      child: Padding(
+                        padding: EdgeInsets.symmetric(horizontal: gap),
+                        child: Align(
+                          alignment: Alignment.bottomCenter,
+                          child: FractionallySizedBox(
+                            widthFactor: 1,
+                            heightFactor: _factor(values[i], maxValue) * t,
+                            child: DecoratedBox(
+                              decoration: BoxDecoration(
+                                color: values[i] <= 0 ? AppColors.border : null,
+                                gradient: values[i] <= 0
+                                    ? null
+                                    : (i == n - 1 ? highlight : regular),
+                                borderRadius: const BorderRadius.vertical(
+                                  top: Radius.circular(4),
+                                ),
                               ),
                             ),
                           ),
@@ -78,8 +100,8 @@ class BarSeriesChart extends StatelessWidget {
                       ),
                     ),
                   ),
-                ),
-            ],
+              ],
+            ),
           ),
         ),
         const SizedBox(height: 6),
@@ -91,16 +113,16 @@ class BarSeriesChart extends StatelessWidget {
                   height: 14,
                   child: showLabel(i)
                       ? OverflowBox(
-                    minWidth: 0,
-                    maxWidth: 56,
-                    child: Text(
-                      labels[i],
-                      softWrap: false,
-                      overflow: TextOverflow.visible,
-                      textAlign: TextAlign.center,
-                      style: labelStyle,
-                    ),
-                  )
+                          minWidth: 0,
+                          maxWidth: 56,
+                          child: Text(
+                            labels[i],
+                            softWrap: false,
+                            overflow: TextOverflow.visible,
+                            textAlign: TextAlign.center,
+                            style: labelStyle,
+                          ),
+                        )
                       : null,
                 ),
               ),

@@ -9,8 +9,13 @@ import 'package:ascend/features/habits/data/habit_providers.dart';
 import 'package:ascend/features/habits/domain/habit_models.dart';
 import 'package:ascend/features/habits/presentation/habit_card.dart';
 import 'package:ascend/features/habits/presentation/habit_interactions.dart';
+import 'package:ascend/shared/widgets/app_card.dart';
+import 'package:ascend/shared/widgets/count_up_text.dart';
 import 'package:ascend/shared/widgets/empty_state.dart';
 import 'package:ascend/shared/widgets/error_state.dart';
+import 'package:ascend/shared/widgets/fade_slide_in.dart';
+import 'package:ascend/shared/widgets/gradient_progress_bar.dart';
+import 'package:ascend/shared/widgets/segment_control.dart';
 import 'package:ascend/shared/widgets/split_row.dart';
 
 class HabitsScreen extends ConsumerStatefulWidget {
@@ -29,6 +34,86 @@ class _HabitsScreenState extends ConsumerState<HabitsScreen> {
     final todayKey = dayKeyOf(now);
     final async = ref.watch(habitsProvider);
 
+    Widget padded(Widget child) => Padding(
+      padding: const EdgeInsets.fromLTRB(
+        AppSpacing.lg,
+        0,
+        AppSpacing.lg,
+        AppSpacing.md,
+      ),
+      child: child,
+    );
+
+    final content = async.when<List<Widget>>(
+      loading: () => const [
+        Padding(
+          padding: EdgeInsets.all(AppSpacing.xxl),
+          child: Center(child: CircularProgressIndicator()),
+        ),
+      ],
+      error: (error, stack) => [
+        ErrorState(
+          message: 'Could not load habits.',
+          onRetry: () => ref.invalidate(habitsProvider),
+        ),
+      ],
+      data: (all) {
+        final list =
+            all.where((p) => p.habit.isArchived == _showArchived).toList();
+
+        if (list.isEmpty) {
+          return [
+            _showArchived
+                ? const EmptyState(
+                    icon: Icons.inventory_2_outlined,
+                    title: 'Nothing archived',
+                    message: 'Archived habits are kept here.',
+                  )
+                : EmptyState(
+                    icon: Icons.repeat_rounded,
+                    title: 'No habits yet',
+                    message: 'Small daily actions build big streaks.',
+                    actionLabel: 'Add habit',
+                    onAction: () => createHabit(context),
+                  ),
+          ];
+        }
+
+        final scheduled = _showArchived
+            ? const <HabitProgress>[]
+            : list.where((p) => p.habit.isScheduledOn(now)).toList();
+        final done = scheduled.where((p) => p.isDoneOn(todayKey)).length;
+
+        return [
+          if (scheduled.isNotEmpty)
+            padded(_TodaySummary(done: done, total: scheduled.length)),
+          for (var i = 0; i < list.length; i++)
+            padded(
+              FadeSlideIn(
+                key: ValueKey(list[i].habit.id),
+                delay: Duration(milliseconds: 40 * (i > 8 ? 8 : i)),
+                child: HabitCard(
+                  progress: list[i],
+                  today: now,
+                  showWeek: true,
+                  archived: _showArchived,
+                  onToggle: () =>
+                      toggleHabitToday(context, ref, list[i], todayKey),
+                  onEdit: () => editHabit(context, list[i].habit),
+                  onArchive: () => setHabitArchived(
+                    context,
+                    ref,
+                    list[i].habit,
+                    archived: !_showArchived,
+                  ),
+                  onDelete: () => confirmDeleteHabit(context, ref, list[i]),
+                ),
+              ),
+            ),
+        ];
+      },
+    );
+
     return Scaffold(
       appBar: AppBar(
         title: const Text('Habits'),
@@ -44,113 +129,23 @@ class _HabitsScreenState extends ConsumerState<HabitsScreen> {
         alignment: Alignment.topCenter,
         child: ConstrainedBox(
           constraints: const BoxConstraints(maxWidth: 720),
-          child: Column(
+          child: ListView(
+            padding: const EdgeInsets.only(bottom: 96),
             children: [
               Padding(
                 padding: const EdgeInsets.fromLTRB(
                   AppSpacing.lg,
                   AppSpacing.xs,
                   AppSpacing.lg,
-                  AppSpacing.md,
+                  AppSpacing.lg,
                 ),
-                child: SizedBox(
-                  width: double.infinity,
-                  child: SegmentedButton<bool>(
-                    showSelectedIcon: false,
-                    style: SegmentedButton.styleFrom(
-                      foregroundColor: AppColors.textSecondary,
-                      selectedForegroundColor: AppColors.textPrimary,
-                      selectedBackgroundColor:
-                      AppColors.primary.withValues(alpha: 0.25),
-                      side: const BorderSide(color: AppColors.border),
-                    ),
-                    segments: const [
-                      ButtonSegment(value: false, label: Text('Active')),
-                      ButtonSegment(value: true, label: Text('Archived')),
-                    ],
-                    selected: {_showArchived},
-                    onSelectionChanged: (selection) =>
-                        setState(() => _showArchived = selection.first),
-                  ),
+                child: SegmentControl<bool>(
+                  segments: const [(false, 'Active'), (true, 'Archived')],
+                  selected: _showArchived,
+                  onChanged: (value) => setState(() => _showArchived = value),
                 ),
               ),
-              Expanded(
-                child: async.when(
-                  loading: () =>
-                  const Center(child: CircularProgressIndicator()),
-                  error: (error, stack) => ErrorState(
-                    message: 'Could not load habits.',
-                    onRetry: () => ref.invalidate(habitsProvider),
-                  ),
-                  data: (all) {
-                    final list = all
-                        .where((p) => p.habit.isArchived == _showArchived)
-                        .toList();
-
-                    if (list.isEmpty) {
-                      return _showArchived
-                          ? const EmptyState(
-                        icon: Icons.inventory_2_outlined,
-                        title: 'Nothing archived',
-                        message: 'Archived habits are kept here.',
-                      )
-                          : EmptyState(
-                        icon: Icons.repeat_rounded,
-                        title: 'No habits yet',
-                        message: 'Small daily actions build big streaks.',
-                        actionLabel: 'Add habit',
-                        onAction: () => createHabit(context),
-                      );
-                    }
-
-                    final scheduled = _showArchived
-                        ? const <HabitProgress>[]
-                        : list.where((p) => p.habit.isScheduledOn(now)).toList();
-                    final done =
-                        scheduled.where((p) => p.isDoneOn(todayKey)).length;
-                    final showSummary = scheduled.isNotEmpty;
-                    final offset = showSummary ? 1 : 0;
-
-                    return ListView.separated(
-                      padding: const EdgeInsets.fromLTRB(
-                        AppSpacing.lg,
-                        AppSpacing.xs,
-                        AppSpacing.lg,
-                        96,
-                      ),
-                      itemCount: list.length + offset,
-                      separatorBuilder: (context, index) =>
-                      const SizedBox(height: AppSpacing.md),
-                      itemBuilder: (context, index) {
-                        if (showSummary && index == 0) {
-                          return _TodaySummary(
-                            done: done,
-                            total: scheduled.length,
-                          );
-                        }
-                        final p = list[index - offset];
-                        return HabitCard(
-                          key: ValueKey(p.habit.id),
-                          progress: p,
-                          today: now,
-                          showWeek: true,
-                          archived: _showArchived,
-                          onToggle: () =>
-                              toggleHabitToday(context, ref, p, todayKey),
-                          onEdit: () => editHabit(context, p.habit),
-                          onArchive: () => setHabitArchived(
-                            context,
-                            ref,
-                            p.habit,
-                            archived: !_showArchived,
-                          ),
-                          onDelete: () => confirmDeleteHabit(context, ref, p),
-                        );
-                      },
-                    );
-                  },
-                ),
-              ),
+              ...content,
             ],
           ),
         ),
@@ -170,22 +165,23 @@ class _TodaySummary extends StatelessWidget {
     final text = Theme.of(context).textTheme;
     final fraction = total == 0 ? 0.0 : done / total;
 
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        SplitRow(
-          left: Text('$done of $total done today', style: text.bodyMedium),
-          right: Text(
-            '${(fraction * 100).round()}%',
-            style: text.bodySmall?.copyWith(color: AppColors.textSecondary),
+    return AppCard(
+      glow: total > 0 && done == total,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          SplitRow(
+            left: Text('$done of $total done today', style: text.bodyMedium),
+            right: CountUpText(
+              value: (fraction * 100).round(),
+              suffix: '%',
+              style: text.bodySmall?.copyWith(color: AppColors.textSecondary),
+            ),
           ),
-        ),
-        const SizedBox(height: AppSpacing.sm),
-        ClipRRect(
-          borderRadius: BorderRadius.circular(AppRadius.pill),
-          child: LinearProgressIndicator(value: fraction, minHeight: 6),
-        ),
-      ],
+          const SizedBox(height: AppSpacing.sm),
+          GradientProgressBar(value: fraction),
+        ],
+      ),
     );
   }
 }

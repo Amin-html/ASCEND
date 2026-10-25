@@ -12,8 +12,14 @@ import 'package:ascend/shared/widgets/app_card.dart';
 import 'package:ascend/shared/widgets/bar_series_chart.dart';
 import 'package:ascend/shared/widgets/empty_state.dart';
 import 'package:ascend/shared/widgets/error_state.dart';
-import 'package:ascend/shared/widgets/stat_tile.dart';
+import 'package:ascend/shared/widgets/fade_slide_in.dart';
+import 'package:ascend/shared/widgets/page_header.dart';
+import 'package:ascend/shared/widgets/segment_control.dart';
 import 'package:ascend/shared/widgets/split_row.dart';
+import 'package:ascend/shared/widgets/stat_tile.dart';
+
+/// Ширина контента, с которой плитки идут в один ряд, а графики в два столбца.
+const double _wideWidth = 760;
 
 class StatisticsScreen extends ConsumerStatefulWidget {
   const StatisticsScreen({super.key});
@@ -30,70 +36,67 @@ class _StatisticsScreenState extends ConsumerState<StatisticsScreen> {
     final now = ref.watch(clockProvider).now();
     final async = ref.watch(statsRangeProvider(_days));
 
+    final content = async.when<List<Widget>>(
+      loading: () => const [
+        Padding(
+          padding: EdgeInsets.all(AppSpacing.xxl),
+          child: Center(child: CircularProgressIndicator()),
+        ),
+      ],
+      error: (error, stack) => [
+        ErrorState(
+          message: 'Could not load statistics.',
+          onRetry: () => ref.invalidate(statsRangeProvider(_days)),
+        ),
+      ],
+      data: (stored) => _buildContent(stored, now),
+    );
+
     return Scaffold(
-      appBar: AppBar(title: const Text('Statistics')),
-      body: Align(
-        alignment: Alignment.topCenter,
-        child: ConstrainedBox(
-          constraints: const BoxConstraints(maxWidth: 720),
-          child: Column(
-            children: [
-              Padding(
-                padding: const EdgeInsets.fromLTRB(
-                  AppSpacing.lg,
-                  AppSpacing.xs,
-                  AppSpacing.lg,
-                  AppSpacing.md,
-                ),
-                child: SizedBox(
-                  width: double.infinity,
-                  child: SegmentedButton<int>(
-                    showSelectedIcon: false,
-                    style: SegmentedButton.styleFrom(
-                      foregroundColor: AppColors.textSecondary,
-                      selectedForegroundColor: AppColors.textPrimary,
-                      selectedBackgroundColor:
-                      AppColors.primary.withValues(alpha: 0.25),
-                      side: const BorderSide(color: AppColors.border),
-                    ),
-                    segments: const [
-                      ButtonSegment(value: 7, label: Text('7 days')),
-                      ButtonSegment(value: 30, label: Text('30 days')),
-                    ],
-                    selected: {_days},
-                    onSelectionChanged: (selection) =>
-                        setState(() => _days = selection.first),
+      body: SafeArea(
+        bottom: false,
+        child: Align(
+          alignment: Alignment.topCenter,
+          child: ConstrainedBox(
+            constraints: const BoxConstraints(maxWidth: 1040),
+            child: ListView(
+              padding: const EdgeInsets.only(bottom: AppSpacing.xxxl),
+              children: [
+                const PageHeader(title: 'Statistics'),
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(
+                    AppSpacing.lg,
+                    AppSpacing.xs,
+                    AppSpacing.lg,
+                    AppSpacing.lg,
+                  ),
+                  child: SegmentControl<int>(
+                    segments: const [(7, '7 days'), (30, '30 days')],
+                    selected: _days,
+                    onChanged: (value) => setState(() => _days = value),
                   ),
                 ),
-              ),
-              Expanded(
-                child: async.when(
-                  loading: () =>
-                  const Center(child: CircularProgressIndicator()),
-                  error: (error, stack) => ErrorState(
-                    message: 'Could not load statistics.',
-                    onRetry: () => ref.invalidate(statsRangeProvider(_days)),
-                  ),
-                  data: (stored) => _buildContent(stored, now),
-                ),
-              ),
-            ],
+                ...content,
+              ],
+            ),
           ),
         ),
       ),
     );
   }
 
-  Widget _buildContent(List<DayStat> stored, DateTime now) {
+  List<Widget> _buildContent(List<DayStat> stored, DateTime now) {
     final series = buildSeries(stored, now, _days);
     final summary = summarize(series);
 
     if (!summary.hasActivity) {
-      return const EmptyState(
-        icon: Icons.insights_rounded,
-        title: 'No activity yet',
-        message: 'Complete tasks, focus or build habits to see your stats.',
-      );
+      return const [
+        EmptyState(
+          icon: Icons.insights_rounded,
+          title: 'No activity yet',
+          message: 'Complete tasks, focus or build habits to see your stats.',
+        ),
+      ];
     }
 
     final dates = [for (final s in series) dateFromDayKey(s.dayKey)];
@@ -106,69 +109,60 @@ class _StatisticsScreenState extends ConsumerState<StatisticsScreen> {
         '${shortDate(dates[i])}: ${value(series[i])}',
     ];
 
-    return ListView(
-      padding: const EdgeInsets.fromLTRB(
-        AppSpacing.lg,
-        AppSpacing.xs,
-        AppSpacing.lg,
-        AppSpacing.xxxl,
+    Widget stagger(int index, Widget child) => FadeSlideIn(
+      delay: Duration(milliseconds: 60 * index),
+      child: child,
+    );
+
+    final tiles = <Widget>[
+      stagger(
+        0,
+        StatTile(
+          icon: Icons.check_circle_rounded,
+          iconColor: AppColors.success,
+          value: '${summary.tasksCompleted}',
+          countTo: summary.tasksCompleted,
+          label: 'Tasks done',
+          caption: '${summary.activeDays} active days',
+        ),
       ),
-      children: [
-        IntrinsicHeight(
-          child: Row(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              Expanded(
-                child: StatTile(
-                  icon: Icons.check_circle_rounded,
-                  iconColor: AppColors.success,
-                  value: '${summary.tasksCompleted}',
-                  label: 'Tasks done',
-                  caption: '${summary.activeDays} active days',
-                ),
-              ),
-              const SizedBox(width: AppSpacing.lg),
-              Expanded(
-                child: StatTile(
-                  icon: Icons.timer_rounded,
-                  iconColor: AppColors.primaryLight,
-                  value: formatDurationShort(summary.focusSeconds),
-                  label: 'Focus time',
-                  caption:
-                  'Avg ${formatDurationShort(summary.avgFocusSeconds)} / day',
-                ),
-              ),
-            ],
-          ),
+      stagger(
+        1,
+        StatTile(
+          icon: Icons.timer_rounded,
+          iconColor: AppColors.primaryLight,
+          value: formatDurationShort(summary.focusSeconds),
+          label: 'Focus time',
+          caption: 'Avg ${formatDurationShort(summary.avgFocusSeconds)} / day',
         ),
-        const SizedBox(height: AppSpacing.lg),
-        IntrinsicHeight(
-          child: Row(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              Expanded(
-                child: StatTile(
-                  icon: Icons.bolt_rounded,
-                  iconColor: AppColors.accent,
-                  value: '${summary.xpEarned}',
-                  label: 'XP earned',
-                  caption: 'Avg ${summary.avgXp} / day',
-                ),
-              ),
-              const SizedBox(width: AppSpacing.lg),
-              Expanded(
-                child: StatTile(
-                  icon: Icons.verified_rounded,
-                  iconColor: AppColors.warning,
-                  value: '${summary.perfectDays}',
-                  label: 'Perfect days',
-                  caption: 'Whole plan completed',
-                ),
-              ),
-            ],
-          ),
+      ),
+      stagger(
+        2,
+        StatTile(
+          icon: Icons.bolt_rounded,
+          iconColor: AppColors.accent,
+          value: '${summary.xpEarned}',
+          countTo: summary.xpEarned,
+          label: 'XP earned',
+          caption: 'Avg ${summary.avgXp} / day',
         ),
-        const SizedBox(height: AppSpacing.xxl),
+      ),
+      stagger(
+        3,
+        StatTile(
+          icon: Icons.verified_rounded,
+          iconColor: AppColors.warning,
+          value: '${summary.perfectDays}',
+          countTo: summary.perfectDays,
+          label: 'Perfect days',
+          caption: 'Whole plan completed',
+        ),
+      ),
+    ];
+
+    final charts = <Widget>[
+      stagger(
+        4,
         _ChartCard(
           title: 'Tasks completed',
           total: 'Total ${summary.tasksCompleted}',
@@ -178,7 +172,9 @@ class _StatisticsScreenState extends ConsumerState<StatisticsScreen> {
             tooltips: tips((s) => '${s.tasksCompleted}'),
           ),
         ),
-        const SizedBox(height: AppSpacing.lg),
+      ),
+      stagger(
+        5,
         _ChartCard(
           title: 'Focus',
           total: 'Total ${formatDurationShort(summary.focusSeconds)}',
@@ -188,7 +184,9 @@ class _StatisticsScreenState extends ConsumerState<StatisticsScreen> {
             tooltips: tips((s) => formatDurationShort(s.focusSeconds)),
           ),
         ),
-        const SizedBox(height: AppSpacing.lg),
+      ),
+      stagger(
+        6,
         _ChartCard(
           title: 'XP earned',
           total: 'Total ${summary.xpEarned}',
@@ -198,6 +196,75 @@ class _StatisticsScreenState extends ConsumerState<StatisticsScreen> {
             tooltips: tips((s) => '${s.xpEarned} XP'),
           ),
         ),
+      ),
+    ];
+
+    return [
+      Padding(
+        padding: const EdgeInsets.symmetric(horizontal: AppSpacing.lg),
+        child: LayoutBuilder(
+          builder: (context, constraints) {
+            final wide = constraints.maxWidth >= _wideWidth;
+            return Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                _TileGrid(tiles: tiles, columns: wide ? 4 : 2),
+                const SizedBox(height: AppSpacing.xxl),
+                if (wide)
+                  Wrap(
+                    spacing: AppSpacing.lg,
+                    runSpacing: AppSpacing.lg,
+                    children: [
+                      for (final chart in charts)
+                        SizedBox(
+                          width: (constraints.maxWidth - AppSpacing.lg) / 2,
+                          child: chart,
+                        ),
+                    ],
+                  )
+                else
+                  for (var i = 0; i < charts.length; i++) ...[
+                    if (i > 0) const SizedBox(height: AppSpacing.lg),
+                    charts[i],
+                  ],
+              ],
+            );
+          },
+        ),
+      ),
+    ];
+  }
+}
+
+/// Плитки рядами по [columns] штук. Плитки в ряду одной высоты.
+class _TileGrid extends StatelessWidget {
+  const _TileGrid({required this.tiles, required this.columns});
+
+  final List<Widget> tiles;
+  final int columns;
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      children: [
+        for (var i = 0; i < tiles.length; i += columns) ...[
+          if (i > 0) const SizedBox(height: AppSpacing.lg),
+          IntrinsicHeight(
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                for (var j = i; j < i + columns; j++) ...[
+                  if (j > i) const SizedBox(width: AppSpacing.lg),
+                  Expanded(
+                    child: j < tiles.length
+                        ? tiles[j]
+                        : const SizedBox.shrink(),
+                  ),
+                ],
+              ],
+            ),
+          ),
+        ],
       ],
     );
   }

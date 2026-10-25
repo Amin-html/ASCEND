@@ -284,9 +284,13 @@ class _DayDot extends StatelessWidget {
         height: 22,
         decoration: const BoxDecoration(
           shape: BoxShape.circle,
-          color: AppColors.primary,
+          color: AppColors.success,
         ),
-        child: const Icon(Icons.check_rounded, size: 14, color: Colors.white),
+        child: const Icon(
+          Icons.check_rounded,
+          size: 14,
+          color: AppColors.background,
+        ),
       );
     } else if (scheduled) {
       dot = Container(
@@ -332,4 +336,4 @@ class _DayDot extends StatelessWidget {
       ],
     );
   }
-}
+}
