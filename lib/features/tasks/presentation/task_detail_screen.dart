@@ -16,6 +16,8 @@ import 'package:ascend/features/tasks/presentation/task_labels.dart';
 import 'package:ascend/shared/widgets/app_card.dart';
 import 'package:ascend/shared/widgets/empty_state.dart';
 import 'package:ascend/shared/widgets/error_state.dart';
+import 'package:ascend/shared/widgets/fade_slide_in.dart';
+import 'package:ascend/shared/widgets/icon_badge.dart';
 
 class TaskDetailScreen extends ConsumerWidget {
   const TaskDetailScreen({required this.taskId, super.key});
@@ -123,7 +125,8 @@ class _TaskContent extends ConsumerWidget {
         alignment: Alignment.topCenter,
         child: ConstrainedBox(
           constraints: const BoxConstraints(maxWidth: 720),
-          child: ListView(
+          child: FadeSlideIn(
+            child: ListView(
             padding: const EdgeInsets.fromLTRB(
               AppSpacing.lg,
               AppSpacing.xs,
@@ -246,6 +249,7 @@ class _TaskContent extends ConsumerWidget {
               ],
             ],
           ),
+          ),
         ),
       ),
     );
@@ -296,7 +300,12 @@ class _InfoRow extends StatelessWidget {
       padding: const EdgeInsets.symmetric(vertical: AppSpacing.sm),
       child: Row(
         children: [
-          Icon(icon, size: 18, color: AppColors.textMuted),
+          IconBadge(
+            icon: icon,
+            size: 32,
+            color: AppColors.textSecondary,
+            iconColor: AppColors.textSecondary,
+          ),
           const SizedBox(width: AppSpacing.md),
           SizedBox(
             width: 84,
@@ -316,4 +325,4 @@ class _InfoRow extends StatelessWidget {
       ),
     );
   }
-}
+}

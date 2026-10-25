@@ -18,6 +18,7 @@ import 'package:ascend/shared/widgets/app_card.dart';
 import 'package:ascend/shared/widgets/confirm_dialog.dart';
 import 'package:ascend/shared/widgets/empty_state.dart';
 import 'package:ascend/shared/widgets/error_state.dart';
+import 'package:ascend/shared/widgets/fade_slide_in.dart';
 import 'package:ascend/shared/widgets/progress_ring.dart';
 
 enum _GoalMenu { edit, complete, reopen, archive, restore, delete }
@@ -220,7 +221,9 @@ class _GoalDetailScreenState extends ConsumerState<GoalDetailScreen> {
               96,
             ),
             children: [
-              _Header(item: item, category: category, now: now),
+              FadeSlideIn(
+                child: _Header(item: item, category: category, now: now),
+              ),
               const SizedBox(height: AppSpacing.xxl),
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -247,16 +250,21 @@ class _GoalDetailScreenState extends ConsumerState<GoalDetailScreen> {
                     ),
                   ),
                 ),
-              for (final m in item.milestones)
+              for (var i = 0; i < item.milestones.length; i++)
                 Padding(
                   padding: const EdgeInsets.only(bottom: AppSpacing.sm),
-                  child: _MilestoneTile(
-                    key: ValueKey(m.id),
-                    milestone: m,
-                    xp: milestoneXp,
-                    onToggle: () => toggleMilestone(context, ref, m),
-                    onRename: () => _rename(m),
-                    onDelete: () => _deleteMilestone(m),
+                  child: FadeSlideIn(
+                    key: ValueKey('fade-${item.milestones[i].id}'),
+                    delay: Duration(milliseconds: 40 * (i > 8 ? 8 : i)),
+                    child: _MilestoneTile(
+                      key: ValueKey(item.milestones[i].id),
+                      milestone: item.milestones[i],
+                      xp: milestoneXp,
+                      onToggle: () =>
+                          toggleMilestone(context, ref, item.milestones[i]),
+                      onRename: () => _rename(item.milestones[i]),
+                      onDelete: () => _deleteMilestone(item.milestones[i]),
+                    ),
                   ),
                 ),
               const SizedBox(height: AppSpacing.sm),
@@ -454,9 +462,9 @@ class _MilestoneTile extends StatelessWidget {
                     height: 24,
                     decoration: BoxDecoration(
                       shape: BoxShape.circle,
-                      color: done ? AppColors.primary : Colors.transparent,
+                      color: done ? AppColors.success : Colors.transparent,
                       border: Border.all(
-                        color: done ? AppColors.primary : AppColors.textMuted,
+                        color: done ? AppColors.success : AppColors.textMuted,
                         width: 1.6,
                       ),
                     ),
@@ -464,7 +472,7 @@ class _MilestoneTile extends StatelessWidget {
                         ? const Icon(
                       Icons.check_rounded,
                       size: 16,
-                      color: Colors.white,
+                      color: AppColors.background,
                     )
                         : null,
                   ),
@@ -568,4 +576,4 @@ class _RenameDialogState extends State<_RenameDialog> {
       ],
     );
   }
-}
+}
