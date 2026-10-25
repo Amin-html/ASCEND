@@ -24,7 +24,9 @@ import 'package:ascend/features/tasks/domain/task.dart';
 import 'package:ascend/features/tasks/domain/task_enums.dart';
 import 'package:ascend/shared/widgets/app_card.dart';
 import 'package:ascend/shared/widgets/confirm_dialog.dart';
+import 'package:ascend/shared/widgets/fade_slide_in.dart';
 import 'package:ascend/shared/widgets/progress_ring.dart';
+import 'package:ascend/shared/widgets/segment_control.dart';
 import 'package:ascend/shared/widgets/split_row.dart';
 
 enum _ExitChoice { keep, save, discard }
@@ -235,17 +237,27 @@ class _FocusScreenState extends ConsumerState<FocusScreen> {
         if (!didPop) unawaited(_onPopBlocked());
       },
       child: Scaffold(
-        appBar: AppBar(title: const Text('Focus')),
-        body: SafeArea(
-          child: Align(
-            alignment: Alignment.topCenter,
-            child: ConstrainedBox(
-              constraints: const BoxConstraints(maxWidth: 560),
-              child: timer == null
-                  ? _buildSetup(context)
-                  : _buildRunning(context, timer),
+        extendBodyBehindAppBar: true,
+        appBar: AppBar(
+          title: const Text('Focus'),
+          backgroundColor: Colors.transparent,
+        ),
+        body: Stack(
+          fit: StackFit.expand,
+          children: [
+            const _FocusBackdrop(),
+            SafeArea(
+              child: Align(
+                alignment: Alignment.topCenter,
+                child: ConstrainedBox(
+                  constraints: const BoxConstraints(maxWidth: 560),
+                  child: timer == null
+                      ? _buildSetup(context)
+                      : _buildRunning(context, timer),
+                ),
+              ),
             ),
-          ),
+          ],
         ),
       ),
     );
@@ -281,37 +293,32 @@ class _FocusScreenState extends ConsumerState<FocusScreen> {
     return ListView(
       padding: const EdgeInsets.all(AppSpacing.lg),
       children: [
-        SegmentedButton<FocusMode>(
-          showSelectedIcon: false,
-          style: SegmentedButton.styleFrom(
-            foregroundColor: AppColors.textSecondary,
-            selectedForegroundColor: AppColors.textPrimary,
-            selectedBackgroundColor: AppColors.primary.withValues(alpha: 0.25),
-            side: const BorderSide(color: AppColors.border),
-          ),
+        SegmentControl<FocusMode>(
           segments: const [
-            ButtonSegment(value: FocusMode.countdown, label: Text('Timer')),
-            ButtonSegment(value: FocusMode.stopwatch, label: Text('Stopwatch')),
+            (FocusMode.countdown, 'Timer'),
+            (FocusMode.stopwatch, 'Stopwatch'),
           ],
-          selected: {_mode},
-          onSelectionChanged: (selection) =>
-              setState(() => _mode = selection.first),
+          selected: _mode,
+          onChanged: (value) => setState(() => _mode = value),
         ),
         const SizedBox(height: AppSpacing.xxl),
         Center(
-          child: ProgressRing(
-            value: 0,
-            size: 220,
-            strokeWidth: 12,
-            child: Padding(
-              padding: const EdgeInsets.all(32),
-              child: FittedBox(
-                fit: BoxFit.scaleDown,
-                child: Text(
-                  formatClock(preview),
-                  maxLines: 1,
-                  softWrap: false,
-                  style: AppTypography.numeric.copyWith(fontSize: 48),
+          child: _GlowRing(
+            active: false,
+            child: ProgressRing(
+              value: 0,
+              size: 220,
+              strokeWidth: 12,
+              child: Padding(
+                padding: const EdgeInsets.all(32),
+                child: FittedBox(
+                  fit: BoxFit.scaleDown,
+                  child: Text(
+                    formatClock(preview),
+                    maxLines: 1,
+                    softWrap: false,
+                    style: AppTypography.numeric.copyWith(fontSize: 48),
+                  ),
                 ),
               ),
             ),
@@ -394,7 +401,7 @@ class _FocusScreenState extends ConsumerState<FocusScreen> {
           for (final entry in recent)
             Padding(
               padding: const EdgeInsets.only(bottom: AppSpacing.sm),
-              child: _RecentTile(entry: entry),
+              child: FadeSlideIn(child: _RecentTile(entry: entry)),
             ),
         ],
       ],
@@ -424,35 +431,38 @@ class _FocusScreenState extends ConsumerState<FocusScreen> {
       child: Column(
         children: [
           const SizedBox(height: AppSpacing.xl),
-          ProgressRing(
-            value: fraction.clamp(0.0, 1.0).toDouble(),
-            size: 260,
-            strokeWidth: 14,
-            child: Padding(
-              padding: const EdgeInsets.all(36),
-              child: FittedBox(
-                fit: BoxFit.scaleDown,
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Text(
-                      formatClock(shown),
-                      maxLines: 1,
-                      softWrap: false,
-                      style: AppTypography.numeric.copyWith(fontSize: 52),
-                    ),
-                    const SizedBox(height: AppSpacing.xs),
-                    Text(
-                      running ? 'Stay focused' : 'Paused',
-                      maxLines: 1,
-                      softWrap: false,
-                      style: text.bodyMedium?.copyWith(
-                        color: running
-                            ? AppColors.textSecondary
-                            : AppColors.warning,
+          _GlowRing(
+            active: running,
+            child: ProgressRing(
+              value: fraction.clamp(0.0, 1.0).toDouble(),
+              size: 260,
+              strokeWidth: 14,
+              child: Padding(
+                padding: const EdgeInsets.all(36),
+                child: FittedBox(
+                  fit: BoxFit.scaleDown,
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Text(
+                        formatClock(shown),
+                        maxLines: 1,
+                        softWrap: false,
+                        style: AppTypography.numeric.copyWith(fontSize: 52),
                       ),
-                    ),
-                  ],
+                      const SizedBox(height: AppSpacing.xs),
+                      Text(
+                        running ? 'Stay focused' : 'Paused',
+                        maxLines: 1,
+                        softWrap: false,
+                        style: text.bodyMedium?.copyWith(
+                          color: running
+                              ? AppColors.textSecondary
+                              : AppColors.warning,
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
               ),
             ),
@@ -663,5 +673,68 @@ class _RecentTile extends StatelessWidget {
     final when = dateTimeLabel(e.startedAt);
     final task = e.taskTitle;
     return task == null ? when : '$when • $task';
+  }
+}
+
+/// Фото гор под сильным затемнением: фон экрана Focus.
+class _FocusBackdrop extends StatelessWidget {
+  const _FocusBackdrop();
+
+  @override
+  Widget build(BuildContext context) {
+    return Stack(
+      fit: StackFit.expand,
+      children: [
+        Image.asset(
+          'assets/images/ascend_mountains.png',
+          fit: BoxFit.cover,
+          alignment: Alignment.topCenter,
+          cacheWidth: 1280,
+          errorBuilder: (context, error, stack) =>
+              const ColoredBox(color: AppColors.background),
+        ),
+        DecoratedBox(
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              begin: Alignment.topCenter,
+              end: Alignment.bottomCenter,
+              stops: const [0, 0.45, 1],
+              colors: [
+                AppColors.background.withValues(alpha: 0.5),
+                AppColors.background.withValues(alpha: 0.9),
+                AppColors.background.withValues(alpha: 0.97),
+              ],
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+/// Мягкое свечение под кольцом таймера. Сильнее, пока таймер идёт.
+class _GlowRing extends StatelessWidget {
+  const _GlowRing({required this.active, required this.child});
+
+  final bool active;
+  final Widget child;
+
+  @override
+  Widget build(BuildContext context) {
+    return AnimatedContainer(
+      duration: AppMotion.slow,
+      curve: AppMotion.curve,
+      decoration: BoxDecoration(
+        shape: BoxShape.circle,
+        boxShadow: [
+          BoxShadow(
+            color: AppColors.primary.withValues(alpha: active ? 0.32 : 0.14),
+            blurRadius: 64,
+            spreadRadius: active ? 6 : 0,
+          ),
+        ],
+      ),
+      child: child,
+    );
   }
 }

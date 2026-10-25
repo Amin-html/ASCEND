@@ -10,6 +10,8 @@ import 'package:ascend/features/backup/presentation/backup_dialogs.dart';
 import 'package:ascend/features/backup/presentation/backup_flow.dart';
 import 'package:ascend/features/settings/data/settings_providers.dart';
 import 'package:ascend/shared/widgets/app_card.dart';
+import 'package:ascend/shared/widgets/fade_slide_in.dart';
+import 'package:ascend/shared/widgets/icon_badge.dart';
 
 class BackupScreen extends ConsumerStatefulWidget {
   const BackupScreen({super.key});
@@ -82,10 +84,13 @@ class _BackupScreenState extends ConsumerState<BackupScreen> {
               alignment: Alignment.topCenter,
               child: ConstrainedBox(
                 constraints: const BoxConstraints(maxWidth: 640),
-                child: ListView(
+                child: SingleChildScrollView(
                   padding: const EdgeInsets.all(AppSpacing.lg),
+                  child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
-                    _ActionCard(
+                    FadeSlideIn(
+                      child: _ActionCard(
                       icon: Icons.upload_file_rounded,
                       title: 'Create a backup',
                       description:
@@ -98,8 +103,11 @@ class _BackupScreenState extends ConsumerState<BackupScreen> {
                         label: const Text('Create backup'),
                       ),
                     ),
+                    ),
                     const SizedBox(height: AppSpacing.lg),
-                    _ActionCard(
+                    FadeSlideIn(
+                      delay: const Duration(milliseconds: 80),
+                      child: _ActionCard(
                       icon: Icons.download_rounded,
                       title: 'Restore from a file',
                       description:
@@ -113,6 +121,7 @@ class _BackupScreenState extends ConsumerState<BackupScreen> {
                         icon: const Icon(Icons.folder_open_rounded),
                         label: const Text('Choose backup file'),
                       ),
+                    ),
                     ),
                     const SizedBox(height: AppSpacing.xxl),
                     Text('Safety copies', style: text.titleMedium),
@@ -165,6 +174,7 @@ class _BackupScreenState extends ConsumerState<BackupScreen> {
                       },
                     ),
                   ],
+                  ),
                 ),
               ),
             ),
@@ -198,7 +208,7 @@ class _ActionCard extends StatelessWidget {
         children: [
           Row(
             children: [
-              Icon(icon, color: AppColors.primaryLight),
+              IconBadge(icon: icon),
               const SizedBox(width: AppSpacing.md),
               Expanded(child: Text(title, style: text.titleMedium)),
             ],
@@ -237,7 +247,12 @@ class _SafetyTile extends StatelessWidget {
     return AppCard(
       child: Row(
         children: [
-          const Icon(Icons.history_rounded, color: AppColors.textSecondary),
+          const IconBadge(
+            icon: Icons.history_rounded,
+            size: 36,
+            color: AppColors.textSecondary,
+            iconColor: AppColors.textSecondary,
+          ),
           const SizedBox(width: AppSpacing.md),
           Expanded(
             child: Column(

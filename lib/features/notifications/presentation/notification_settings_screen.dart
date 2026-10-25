@@ -9,6 +9,8 @@ import 'package:ascend/features/notifications/data/notification_providers.dart';
 import 'package:ascend/features/notifications/presentation/notification_labels.dart';
 import 'package:ascend/features/settings/data/settings_providers.dart';
 import 'package:ascend/shared/widgets/app_card.dart';
+import 'package:ascend/shared/widgets/fade_slide_in.dart';
+import 'package:ascend/shared/widgets/icon_badge.dart';
 
 class NotificationSettingsScreen extends ConsumerWidget {
   const NotificationSettingsScreen({super.key});
@@ -116,11 +118,14 @@ class NotificationSettingsScreen extends ConsumerWidget {
                 ),
                 const SizedBox(height: AppSpacing.lg),
               ],
-              _SwitchCard(
+              FadeSlideIn(
+                child: _SwitchCard(
+                icon: Icons.notifications_active_rounded,
                 title: 'Allow notifications',
                 subtitle: 'Task reminders and daily plan alerts',
                 value: settings.notificationsEnabled,
                 onChanged: (value) => _toggleMaster(context, ref, value),
+              ),
               ),
               if (settings.notificationsEnabled) ...[
                 const SizedBox(height: AppSpacing.xxl),
@@ -149,13 +154,17 @@ class NotificationSettingsScreen extends ConsumerWidget {
                   ],
                 ),
                 const SizedBox(height: AppSpacing.xxl),
-                _SwitchCard(
+                FadeSlideIn(
+                  delay: const Duration(milliseconds: 80),
+                  child: _SwitchCard(
+                  icon: Icons.nights_stay_rounded,
                   title: 'Evening plan reminder',
                   subtitle: 'Only on days with unfinished tasks',
                   value: settings.dailyPlanReminderEnabled,
                   onChanged: (value) => controller.update(
                         (s) => s.copyWith(dailyPlanReminderEnabled: value),
                   ),
+                ),
                 ),
                 if (settings.dailyPlanReminderEnabled) ...[
                   const SizedBox(height: AppSpacing.md),
@@ -167,10 +176,7 @@ class NotificationSettingsScreen extends ConsumerWidget {
                     ),
                     child: Row(
                       children: [
-                        const Icon(
-                          Icons.schedule_rounded,
-                          color: AppColors.primaryLight,
-                        ),
+                        const IconBadge(icon: Icons.schedule_rounded),
                         const SizedBox(width: AppSpacing.md),
                         Expanded(
                           child: Text('Reminder time', style: text.titleMedium),
@@ -200,12 +206,14 @@ class NotificationSettingsScreen extends ConsumerWidget {
 
 class _SwitchCard extends StatelessWidget {
   const _SwitchCard({
+    required this.icon,
     required this.title,
     required this.subtitle,
     required this.value,
     required this.onChanged,
   });
 
+  final IconData icon;
   final String title;
   final String subtitle;
   final bool value;
@@ -218,6 +226,8 @@ class _SwitchCard extends StatelessWidget {
     return AppCard(
       child: Row(
         children: [
+          IconBadge(icon: icon),
+          const SizedBox(width: AppSpacing.md),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -238,4 +248,4 @@ class _SwitchCard extends StatelessWidget {
       ),
     );
   }
-}
+}

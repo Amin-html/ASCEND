@@ -70,10 +70,19 @@ class _FocusSummaryDialog extends StatelessWidget {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(
-              icon,
-              size: 48,
-              color: r == null ? AppColors.textMuted : AppColors.success,
+            Container(
+              width: 72,
+              height: 72,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                color: (r == null ? AppColors.textMuted : AppColors.success)
+                    .withValues(alpha: 0.16),
+              ),
+              child: Icon(
+                icon,
+                size: 38,
+                color: r == null ? AppColors.textMuted : AppColors.success,
+              ),
             ),
             const SizedBox(height: AppSpacing.lg),
             Text(title, style: text.titleLarge),
@@ -104,4 +113,4 @@ class _FocusSummaryDialog extends StatelessWidget {
       ],
     );
   }
-}
+}
